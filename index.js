@@ -153,7 +153,7 @@ async function addJavascriptFiles (github, repoName, branchName) {
   // package.json checks
   const {status, data: npm} = await github.get(`/repos/${repoName}/contents/package.json`).catch(err => err)
   if (status === 404) {
-    console.robolog('There is no package.json. Is this not checked into npm?')
+    console.robowarn('There is no package.json. Is this not checked into npm?')
     return
   }
   console.robolog('npm file exists! No checks yet implemented, however.')
@@ -193,6 +193,10 @@ async function addJavascriptFiles (github, repoName, branchName) {
 async function addCommunityFiles (github, repoName, branchName) {
   // what is the community vitality like?
   const {data: community} = await github.get(`/repos/${repoName}/community/profile`)
+    .catch(err => {
+      console.robowarn('Unable to get community profile. Check your headers.')
+      return err
+    })
 
   // TODO Automatically get CovGen from GitHub
   // const covgen = await github.get(`/codes_of_conduct/contributor_covenant`)
@@ -205,7 +209,7 @@ async function addCommunityFiles (github, repoName, branchName) {
 
     const fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${filename}${fileEnding}`)).toString('base64')
 
-    console.robolog(`Updating fixture file for ${filename}`)
+    console.robolog(`Adding ${filename} file`)
     await github.put(`/repos/${repoName}/contents/${filename}${fileEnding}`, {
       content: fileContent,
       branch: branchName,
