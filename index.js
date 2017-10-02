@@ -5,17 +5,10 @@ const fs = require('mz/fs')
 const path = require('path')
 const axios = require('axios')
 const env = require('./env')
+const console = require('./lib/robo')
 
 // TODO Check that repoName is valid
 // TODO Export properly
-
-console.robolog = function (message) {
-  return console.log('🤖  ' + message)
-}
-
-console.robowarn = function (message) {
-  return console.log('🔥  ' + message)
-}
 
 async function buildASpace (repoName, diffs) {
   console.log('')
@@ -113,7 +106,7 @@ Hope you can fix it (and my circuits) soon 🙏`
       ref: `refs/heads/${branchName}`,
       sha
     }).catch(err => {
-      console.robowarn('Unable to create a new branch')
+      console.robofire('Unable to create a new branch')
       return err
     })
   } else {
@@ -177,7 +170,7 @@ async function checkCommunityFiles (github, repoName, branchName) {
   // what is the community vitality like?
   const {data: community} = await github.get(`/repos/${repoName}/community/profile`)
     .catch(err => {
-      console.robowarn('Unable to get community profile. Check your headers.')
+      console.robofire('Unable to get community profile. Check your headers.')
       return err
     })
 
@@ -224,7 +217,7 @@ async function checkCommunityFiles (github, repoName, branchName) {
           fileContent = Buffer.from(`# ${repoName.split('/')[1]}
 
     TODO This needs to be filled out!`).toString('base64')
-          console.log('⚠️  You need to fill out the README manually!')
+          console.robowarn('You need to fill out the README manually!')
         } else {
           fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${file.filePath}`)).toString('base64')
         }
