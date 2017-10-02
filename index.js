@@ -43,7 +43,7 @@ async function buildASpace (repoName, diffs) {
   const { branchName } = await initPRandBranch(github, login, repoName)
 
   await addCommunityFiles(github, repoName, branchName)
-  await addJavascriptFiles(github, repoName, branchName)
+  // await addJavascriptFiles(github, repoName, branchName)
 
   await createPullRequest(github, repoName, branchName)
 }
@@ -91,7 +91,6 @@ Hope you can fix it (and my circuits) soon 🙏`
   // TODO Enable existing pull request to be fixed and added to
   // await updateFixtures({diffs, github, repoName, branchName})
   // console.robolog(`pull-request updated: ${pullRequest.html_url}`)
-    console.log(branchName)
     return {branchName}
   }
 
@@ -174,7 +173,7 @@ async function addJavascriptFiles (github, repoName, branchName) {
   // TODO Open issue to enable greenkeeper
 }
 
-async function addCommunityFiles (github, repoName, branchName) {
+async function checkCommunityFiles (github, repoName, branchName) {
   // what is the community vitality like?
   const {data: community} = await github.get(`/repos/${repoName}/community/profile`)
     .catch(err => {
@@ -182,46 +181,130 @@ async function addCommunityFiles (github, repoName, branchName) {
       return err
     })
 
+  const defaultChecks = {
+    'readme': {
+      name: 'readme',
+      filePath: 'README.md',
+      note: 'Update the README. It is only specced out, and will need more work. I suggest [standard-readme](https://github.com/RichardLitt/standard-readme) for this.'
+    },
+    'license': {
+      name: 'license',
+      // TODO You don't need all caps for License, and it doesn't need to be a markdown file
+      filePath: 'LICENSE',
+      note: 'Check that the license data is correct.'
+    },
+    // TODO Parse in the Contributing section from the README
+    'contributing': {
+      name: 'contributing',
+      filePath: 'CONTRIBUTING.md',
+      note: 'Update the Contributing to include any repository-specific requests.'
+    },
+    'code_of_conduct': {
+      name: 'code_of_conduct',
+      filePath: 'CODE_OF_CONDUCT.md',
+      note: 'Update the email address: the default is currently richard.littauer@gmail.com.'
+    }
+  }
+
   // TODO Automatically get CovGen from GitHub
   // const covgen = await github.get(`/codes_of_conduct/contributor_covenant`)
   // console.robolog(covgen)
 
-  async function addFile (filename, fileEnding) {
-    // Check that the file hasn't already been added in the branch
-    if (!fileEnding) {
-      fileEnding = ''
-    }
-    let fileContent
+  let toCheck = []
 
-    const {status} = await github.get(`/repos/${repoName}/contents/${filename}${fileEnding}?ref=${branchName}`)
+  async function existsInBranch (file) {
+    if (!community.files[file.name]) {
+      // Check if file exists already in the branch
+      const {status} = await github.get(`/repos/${repoName}/contents/${file.filePath}?ref=${branchName}`)
       .catch(err => err)
-    if (status === 200) return
+      if (status !== 200) {
+        let fileContent
 
-    if (filename === 'README') {
-      fileContent = Buffer.from(`# ${repoName.split('/')[1]}
+        if (file.name === 'readme') {
+          fileContent = Buffer.from(`# ${repoName.split('/')[1]}
 
-TODO This needs to be filled out!`).toString('base64')
-      console.log('⚠️  You need to fill out the README manually!')
-    } else {
-      fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${filename}${fileEnding}`)).toString('base64')
+    TODO This needs to be filled out!`).toString('base64')
+          console.log('⚠️  You need to fill out the README manually!')
+        } else {
+          fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${file.filePath}`)).toString('base64')
+        }
+
+        file.content = fileContent
+        toCheck.push(file)
+      }
     }
-
-    console.robolog(`Adding ${filename} file`)
-    await github.put(`/repos/${repoName}/contents/${filename}${fileEnding}`, {
-      content: fileContent,
-      branch: branchName,
-      message: `docs: adding ${filename}`
-    })
   }
 
-  // TODO Parse in the Contributing section from the README
-  // TODO Don't just fail on issue
-  // TODO Add all of the community docs in one commit, not many
-  if (!community.files.readme) await addFile('README', '.md')
-  if (!community.files.code_of_conduct) await addFile('CODE_OF_CONDUCT', '.md')
-  if (!community.files.contributing) await addFile('CONTRIBUTING', '.md')
-  // TODO You don't need all caps for License, and it doesn't need to be a markdown file
-  if (!community.files.license) await addFile('LICENSE')
+  // TODO Refactor smarterlike
+  await existsInBranch(defaultChecks.readme)
+  await existsInBranch(defaultChecks.contributing)
+  await existsInBranch(defaultChecks.code_of_conduct)
+  await existsInBranch(defaultChecks.license)
+
+  return toCheck
+}
+
+async function addCommunityFiles (github, repoName, branchName) {
+  // Always work off of master, for now. TODO Enable other dev branches
+  // get the current commit object and current tree
+  const {
+    data: {commit: {sha: currentCommitSha}},
+    data: {commit: {commit: {tree: {sha: treeSha}}}}
+  } = await github.get(`/repos/${repoName}/branches/master`)
+
+  // retrieve the content of the blob object that tree has for that particular file path
+  const {data: {tree}} = await github.get(`/repos/${repoName}/git/trees/${treeSha}`)
+
+  async function getFileBlob (file) {
+    console.robolog(`Adding ${file.name} file`)
+
+    // Create a blob
+    const {data: blob} = await github.post(`/repos/${repoName}/git/blobs`, {
+      content: file.content,
+      encoding: 'base64'
+    })
+
+    return {
+      mode: '100644',
+      type: 'blob',
+      path: file.filePath, // Puts them all in the base directory for now
+      sha: blob.sha,
+      url: blob.url
+    }
+  }
+
+  const filesToCheck = await checkCommunityFiles(github, repoName, branchName)
+
+  // change the content somehow and post a new blob object with that new content, getting a blob SHA back
+  const newBlobs = await Promise.all(filesToCheck.map(async file => {
+    return await getFileBlob(file) /* eslint-disable-line */
+  }))
+
+  if (newBlobs.length !== 0) {
+    const newTree = tree.concat(newBlobs)
+
+    // post a new tree object with that file path pointer replaced with your new blob SHA getting a tree SHA back
+    const {data: {sha: newTreeSha}} = await github.post(`/repos/${repoName}/git/trees`, {
+      tree: newTree,
+      base_tree: treeSha
+    })
+
+    // create a new commit object with the current commit SHA as the parent and the new tree SHA, getting a commit SHA back
+    const {data: {sha: newCommitSha}} = await github.post(`/repos/${repoName}/git/commits`, {
+      message: `docs: adding community docs`,
+      tree: newTreeSha,
+      parents: [currentCommitSha]
+    })
+
+    // update the reference of your branch to point to the new commit SHA
+    await github.post(`/repos/${repoName}/git/refs/heads/${branchName}`, {
+      sha: newCommitSha
+    }).catch(err => {
+      if (err) {
+        console.log('Unable to update refs with new commit')
+      }
+    })
+  }
 }
 
 async function createPullRequest (github, repoName, branchName) {
