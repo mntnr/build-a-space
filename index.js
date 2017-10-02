@@ -117,14 +117,24 @@ Hope you can fix it (and my circuits) soon 🙏`
   const {data: {object: {sha}}} = await github.get(`/repos/${repoName}/git/refs/heads/master`)
 
   const branchName = `docs/boost-vitality/${new Date().toISOString().substr(0, 10)}`
-  console.robolog(`Creating new branch: ${branchName} using last sha ${sha}`)
+
   // Gets a 422 sometimes
-  const {response: branchExists} = await github.get(`/repos/${repoName}/branches/${branchName}`).catch(err => err)
-  if (branchExists.status === 404) {
+  const branchExists = await github.get(`/repos/${repoName}/branches/${branchName}`)
+    .catch(err => {
+      if (err) {
+        console.robolog(`Creating new branch: ${branchName} using last sha ${sha}`)
+      } // do nothing
+    })
+  if (!branchExists) {
     await github.post(`/repos/${repoName}/git/refs`, {
       ref: `refs/heads/${branchName}`,
       sha
+    }).catch(err => {
+      console.robowarn('Unable to create a new branch')
+      return err
     })
+  } else {
+    console.robolog(`Using existing branch: ${branchName} using last sha ${sha}`)
   }
 
   return {branchName}
