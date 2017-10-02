@@ -35,10 +35,10 @@ async function buildASpace (repoName, diffs) {
 
   const { branchName } = await initPRandBranch(github, login, repoName)
 
-  await addCommunityFiles(github, repoName, branchName)
+  const files = await addCommunityFiles(github, repoName, branchName)
   // await addJavascriptFiles(github, repoName, branchName)
 
-  await createPullRequest(github, repoName, branchName)
+  await createPullRequest(github, repoName, branchName, files)
 }
 
 async function initPRandBranch (github, login, repoName) {
@@ -178,24 +178,24 @@ async function checkCommunityFiles (github, repoName, branchName) {
     'readme': {
       name: 'readme',
       filePath: 'README.md',
-      note: 'Update the README. It is only specced out, and will need more work. I suggest [standard-readme](https://github.com/RichardLitt/standard-readme) for this.'
+      note: 'Update your README. It is only specced out, and will need more work. I suggest [standard-readme](https://github.com/RichardLitt/standard-readme) for this.'
     },
     'license': {
       name: 'license',
       // TODO You don't need all caps for License, and it doesn't need to be a markdown file
       filePath: 'LICENSE',
-      note: 'Check that the license data is correct.'
+      note: `Check that the license name and year is correct. I've added the MIT license, which should suit most purposes.`
     },
     // TODO Parse in the Contributing section from the README
     'contributing': {
       name: 'contributing',
       filePath: 'CONTRIBUTING.md',
-      note: 'Update the Contributing to include any repository-specific requests.'
+      note: 'Update the Contributing guide to include any repository-specific requests, or to point to a global Contributing document.'
     },
     'code_of_conduct': {
       name: 'code_of_conduct',
       filePath: 'CODE_OF_CONDUCT.md',
-      note: 'Update the email address: the default is currently richard.littauer@gmail.com.'
+      note: 'Update the email address in the Code of Conduct: the default is currently richard.littauer@gmail.com.'
     }
   }
 
@@ -270,7 +270,7 @@ async function addCommunityFiles (github, repoName, branchName) {
 
   // change the content somehow and post a new blob object with that new content, getting a blob SHA back
   const newBlobs = await Promise.all(filesToCheck.map(async file => {
-    return await getFileBlob(file) /* eslint-disable-line */
+    return await getFileBlob(file) // eslint-disable-line
   }))
 
   if (newBlobs.length !== 0) {
@@ -297,24 +297,32 @@ async function addCommunityFiles (github, repoName, branchName) {
         console.log('Unable to update refs with new commit')
       }
     })
+
+    return filesToCheck
   }
 }
 
-async function createPullRequest (github, repoName, branchName) {
+async function createPullRequest (github, repoName, branchName, files) {
   if (branchName === 'master') {
     console.robolog(`No changes (you've run this already), or there is some other issue.`)
     console.log()
     return
   }
 
+  const body = `Dearest humans,
+
+You are missing some important community files. I am adding them here for you!
+
+Here are some things you should do manually before merging this Pull Request:
+
+${files.map(file => `- [ ] ${file.note}`).join('\n')}
+`
   console.robolog(`Creating pull request`)
   const {data} = await github.post(`/repos/${repoName}/pulls`, {
     title: `Add community documentation`,
     head: branchName,
     base: 'master',
-    body: `Dearest humans,
-
-You are missing some important community files. I am adding them here for you!`
+    body: body
   })
   console.robolog(`Pull request created: ${data.html_url}`)
   console.log('')
