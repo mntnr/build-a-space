@@ -45,23 +45,7 @@ async function buildASpace (repoName, diffs) {
   await addCommunityFiles(github, repoName, branchName)
   await addJavascriptFiles(github, repoName, branchName)
 
-  if (branchName === 'master') {
-    console.robolog(`No changes (you've run this already), or there is some other issue.`)
-    console.log()
-    return
-  }
-
-  console.robolog(`Creating pull request`)
-  const {data} = await github.post(`/repos/${repoName}/pulls`, {
-    title: `Add community documentation`,
-    head: branchName,
-    base: 'master',
-    body: `Dearest humans,
-
-You are missing some important community files. I am adding them here for you!`
-  })
-  console.robolog(`Pull request created: ${data.html_url}`)
-  console.log('')
+  await createPullRequest(github, repoName, branchName)
 }
 
 async function initPRandBranch (github, login, repoName) {
@@ -238,4 +222,24 @@ TODO This needs to be filled out!`).toString('base64')
   if (!community.files.contributing) await addFile('CONTRIBUTING', '.md')
   // TODO You don't need all caps for License, and it doesn't need to be a markdown file
   if (!community.files.license) await addFile('LICENSE')
+}
+
+async function createPullRequest (github, repoName, branchName) {
+  if (branchName === 'master') {
+    console.robolog(`No changes (you've run this already), or there is some other issue.`)
+    console.log()
+    return
+  }
+
+  console.robolog(`Creating pull request`)
+  const {data} = await github.post(`/repos/${repoName}/pulls`, {
+    title: `Add community documentation`,
+    head: branchName,
+    base: 'master',
+    body: `Dearest humans,
+
+You are missing some important community files. I am adding them here for you!`
+  })
+  console.robolog(`Pull request created: ${data.html_url}`)
+  console.log('')
 }
