@@ -1,0 +1,20 @@
+{
+  "name": "build-a-space",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Richard Littauer <richard.littauer@gmail.com> (https://burntfen.com)",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "json-diff": "^0.5.2",
+    "meow": "^3.7.0",
+    "mz": "^2.7.0",
+    "querystring": "^0.2.0"
+  }
+}
