@@ -27,7 +27,7 @@ async function buildASpace (repoName, diffs) {
     baseURL: 'https://api.github.com',
     headers: {
       common: {
-        authorization: `token ${env.FIXTURES_USER_A_TOKEN_FULL_ACCESS}`,
+        authorization: `token ${env.BUILD_A_SPACE}`,
         accept: [
           `application/vnd.github.black-panther-preview+json`, // Community https://developer.github.com/v3/community
           `application/vnd.github.scarlet-witch-preview+json` // CoC https://developer.github.com/v3/codes_of_conduct/
