@@ -13,6 +13,10 @@ console.robolog = function (message) {
   return console.log('🤖  ' + message)
 }
 
+console.robowarn = function (message) {
+  return console.log('🔥  ' + message)
+}
+
 async function buildASpace (repoName, diffs) {
   console.log('')
   console.robolog(`Let's get some documentation up in here. Creating pull request ...`)
