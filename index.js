@@ -204,10 +204,23 @@ async function addCommunityFiles (github, repoName, branchName) {
 
   async function addFile (filename, fileEnding) {
     // Check that the file hasn't already been added in the branch
-    const {status} = await github.get(`/repos/${repoName}/contents/${filename}${fileEnding}?ref=${branchName}`).catch((err) => err)
+    if (!fileEnding) {
+      fileEnding = ''
+    }
+    let fileContent
+
+    const {status} = await github.get(`/repos/${repoName}/contents/${filename}${fileEnding}?ref=${branchName}`)
+      .catch(err => err)
     if (status === 200) return
 
-    const fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${filename}${fileEnding}`)).toString('base64')
+    if (filename === 'README') {
+      fileContent = Buffer.from(`# ${repoName.split('/')[1]}
+
+TODO This needs to be filled out!`).toString('base64')
+      console.log('⚠️  You need to fill out the README manually!')
+    } else {
+      fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${filename}${fileEnding}`)).toString('base64')
+    }
 
     console.robolog(`Adding ${filename} file`)
     await github.put(`/repos/${repoName}/contents/${filename}${fileEnding}`, {
@@ -219,8 +232,8 @@ async function addCommunityFiles (github, repoName, branchName) {
 
   // TODO Parse in the Contributing section from the README
   // TODO Don't just fail on issue
-  // TODO Add all of the community docs in one go
-  // if (!community.files.readme) await addFile('README', '.md')
+  // TODO Add all of the community docs in one commit, not many
+  if (!community.files.readme) await addFile('README', '.md')
   if (!community.files.code_of_conduct) await addFile('CODE_OF_CONDUCT', '.md')
   if (!community.files.contributing) await addFile('CONTRIBUTING', '.md')
   // TODO You don't need all caps for License, and it doesn't need to be a markdown file
