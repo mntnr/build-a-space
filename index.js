@@ -23,10 +23,18 @@ const github = axios.create({
 // TODO Export properly
 
 async function buildASpace (repoName, diffs) {
-  console.robolog(`Let's get some documentation up in here. Creating pull request ...`)
-
   // https://docs.travis-ci.com/user/environment-variables/
   github.repoName = repoName || env.TRAVIS_REPO_SLUG
+
+  await github.get(`/repos/${github.repoName}`).catch(err => {
+    if (err) {
+      console.robofire('That is not a valid GitHUb repository!')
+      console.log('')
+      process.exit(1)
+    }
+  })
+
+  console.robolog(`Let's get some documentation up in here. Creating pull request ...`)
 
   // who am I?
   const {data: {login}} = await github.get('/user')
