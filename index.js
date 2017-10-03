@@ -35,10 +35,12 @@ async function buildASpace (repoName, diffs) {
 
   const { branchName } = await initPRandBranch(github, login, repoName)
 
-  const files = await addCommunityFiles(github, repoName, branchName)
-  // await addJavascriptFiles(github, repoName, branchName)
+  const communityFiles = await checkCommunityFiles(github, repoName, branchName)
 
-  await createPullRequest(github, repoName, branchName, files)
+  const files = await bunchFiles(github, repoName, branchName, communityFiles)
+  const jsFiles = await addJavascriptFiles(github, repoName, branchName)
+
+  await createPullRequest(github, repoName, branchName, files.concat(jsFiles))
 }
 
 async function initPRandBranch (github, login, repoName) {
@@ -126,6 +128,8 @@ async function addJavascriptFiles (github, repoName, branchName) {
   const {data: language} = await github.get(`/repos/${repoName}`)
   if (!language === 'JavaScript') return
 
+  let toCheck = []
+
   // package.json checks
   const {status, data: npm} = await github.get(`/repos/${repoName}/contents/package.json`).catch(err => err)
   if (status === 404) {
@@ -133,8 +137,8 @@ async function addJavascriptFiles (github, repoName, branchName) {
     return
   }
   console.robolog('npm file exists! No checks yet implemented, however.')
-  // const fileContent = JSON.parse(Buffer.from(npm.content, 'base64'))
-  // if (!fileContent.scripts.test || fileContent.scripts.test === "echo \"Error: no test specified\" && exit 1") {
+  const fileContent = JSON.parse(Buffer.from(npm.content, 'base64'))
+  if (!fileContent.scripts.test || fileContent.scripts.test.indexOf('no test specified') === -1) {
     // TODO Open an issue suggesting that they add tests
     // const query = querystring.stringify({
     //   type: 'issue',
@@ -152,7 +156,29 @@ async function addJavascriptFiles (github, repoName, branchName) {
     //
     // const {data: {html_url: issueUrl}} = result
     // console.log(`🤖🙏 issue opened as a reminder to add tests: ${issueUrl}`)
-  // }
+  }
+  // TODO Check if the travis file is exactly the same, anyway
+  // If travis file exists
+  const travisFile = {
+    name: 'travis',
+    filePath: '.travis.yml',
+    note: 'Check if .travis.yml was overwritten or not.'
+  }
+
+  travisFile.content = await fs.readFileSync(path.join(__dirname, `fixtures/js/${travisFile.filePath}`)).toString('base64')
+  await github.put(`/repos/${repoName}/contents/${travisFile.filePath}?ref=${branchName}`, {
+    path: travisFile.filePath,
+    message: 'ci: adding travis file with Greenkeeper and semantic-release enabled',
+    content: travisFile.content,
+    branch: branchName
+  }).catch(err => {
+    if (err) {
+      console.robowarn('Unable to add travis file!')
+    }
+  })
+  // TODO Open issue to enable greenkeeper
+
+  toCheck.push(travisFile)
 
   // TODO Check that the package description matches GitHub description
   // TODO Check that the keywords match GitHub topics
@@ -161,9 +187,8 @@ async function addJavascriptFiles (github, repoName, branchName) {
   // TODO Check that the license matches
   // TODO Check that the repository matches
 
-  // TODO Add travis file for semantic-release and greenkeeper
-  // TODO Add in semantic-release
-  // TODO Open issue to enable greenkeeper
+
+  return toCheck
 }
 
 async function checkCommunityFiles (github, repoName, branchName) {
@@ -199,10 +224,6 @@ async function checkCommunityFiles (github, repoName, branchName) {
     }
   }
 
-  // TODO Automatically get CovGen from GitHub
-  // const covgen = await github.get(`/codes_of_conduct/contributor_covenant`)
-  // console.robolog(covgen)
-
   let toCheck = []
 
   async function existsInBranch (file) {
@@ -216,7 +237,7 @@ async function checkCommunityFiles (github, repoName, branchName) {
         if (file.name === 'readme') {
           fileContent = Buffer.from(`# ${repoName.split('/')[1]}
 
-    TODO This needs to be filled out!`).toString('base64')
+TODO This needs to be filled out!`).toString('base64')
           console.robowarn('You need to fill out the README manually!')
         } else {
           fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${file.filePath}`)).toString('base64')
@@ -237,7 +258,9 @@ async function checkCommunityFiles (github, repoName, branchName) {
   return toCheck
 }
 
-async function addCommunityFiles (github, repoName, branchName) {
+// This function bunches up multiple file changes into the same commit.
+// It depends on a files object: { name, filepath, content, note }.
+async function bunchFiles (github, repoName, branchName, filesToCheck) {
   // Always work off of master, for now. TODO Enable other dev branches
   // get the current commit object and current tree
   const {
@@ -265,8 +288,6 @@ async function addCommunityFiles (github, repoName, branchName) {
       url: blob.url
     }
   }
-
-  const filesToCheck = await checkCommunityFiles(github, repoName, branchName)
 
   // change the content somehow and post a new blob object with that new content, getting a blob SHA back
   const newBlobs = await Promise.all(filesToCheck.map(async file => {
@@ -297,9 +318,8 @@ async function addCommunityFiles (github, repoName, branchName) {
         console.log('Unable to update refs with new commit')
       }
     })
-
-    return filesToCheck
   }
+  return filesToCheck
 }
 
 async function createPullRequest (github, repoName, branchName, files) {
