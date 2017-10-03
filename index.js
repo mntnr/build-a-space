@@ -108,7 +108,7 @@ Hope you can fix it (and my circuits) soon 🙏`
       ref: `refs/heads/${branchName}`,
       sha
     }).catch(err => {
-      console.robofire('Unable to create a new branch')
+      console.robofire('Unable to create a new branch. Do you have access?')
       return err
     })
   } else {
@@ -127,6 +127,8 @@ async function addJavascriptFiles (github, repoName, branchName) {
   // Is this a JS repo?
   const {data: language} = await github.get(`/repos/${repoName}`)
   if (!language === 'JavaScript') return
+
+  console.robolog('Assuming this is a JavaScript repository, checking...')
 
   let toCheck = []
 
@@ -199,30 +201,30 @@ async function checkCommunityFiles (github, repoName, branchName) {
       return err
     })
 
-  const defaultChecks = {
-    'readme': {
+  const defaultChecks = [
+    {
       name: 'readme',
       filePath: 'README.md',
       note: 'Update your README. It is only specced out, and will need more work. I suggest [standard-readme](https://github.com/RichardLitt/standard-readme) for this.'
     },
-    'license': {
+    {
       name: 'license',
       // TODO You don't need all caps for License, and it doesn't need to be a markdown file
       filePath: 'LICENSE',
       note: `Check that the license name and year is correct. I've added the MIT license, which should suit most purposes.`
     },
     // TODO Parse in the Contributing section from the README
-    'contributing': {
+    {
       name: 'contributing',
       filePath: 'CONTRIBUTING.md',
       note: 'Update the Contributing guide to include any repository-specific requests, or to point to a global Contributing document.'
     },
-    'code_of_conduct': {
+    {
       name: 'code_of_conduct',
       filePath: 'CODE_OF_CONDUCT.md',
       note: 'Update the email address in the Code of Conduct: the default is currently richard.littauer@gmail.com.'
     }
-  }
+  ]
 
   let toCheck = []
 
@@ -249,11 +251,7 @@ TODO This needs to be filled out!`).toString('base64')
     }
   }
 
-  // TODO Refactor smarterlike
-  await existsInBranch(defaultChecks.readme)
-  await existsInBranch(defaultChecks.contributing)
-  await existsInBranch(defaultChecks.code_of_conduct)
-  await existsInBranch(defaultChecks.license)
+  await Promise.all(defaultChecks.map(async file => existsInBranch(file)))
 
   return toCheck
 }
@@ -278,6 +276,10 @@ async function bunchFiles (github, repoName, branchName, filesToCheck) {
     const {data: blob} = await github.post(`/repos/${repoName}/git/blobs`, {
       content: file.content,
       encoding: 'base64'
+    }).catch(err => {
+      if (err) {}
+      console.robofire(`I can't post to a foreign repo! Do you have access?`)
+      process.exit(1)
     })
 
     return {
@@ -290,9 +292,7 @@ async function bunchFiles (github, repoName, branchName, filesToCheck) {
   }
 
   // change the content somehow and post a new blob object with that new content, getting a blob SHA back
-  const newBlobs = await Promise.all(filesToCheck.map(async file => {
-    return await getFileBlob(file) // eslint-disable-line
-  }))
+  const newBlobs = await Promise.all(filesToCheck.map(async file => getFileBlob(file)))
 
   if (newBlobs.length !== 0) {
     const newTree = tree.concat(newBlobs)
