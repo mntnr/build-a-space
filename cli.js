@@ -14,7 +14,13 @@ const cli = meow([`
   alias: {}
 }])
 
-fn(cli.input[0])
+async function letsGo () {
+  console.log('')
+  await fn(cli.input[0])
+  console.log('')
+}
+
+letsGo()
 
 // const token = process.env.GITHUB_TOKEN;
 

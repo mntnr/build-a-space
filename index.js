@@ -23,7 +23,6 @@ const github = axios.create({
 // TODO Export properly
 
 async function buildASpace (repoName, diffs) {
-  console.log('')
   console.robolog(`Let's get some documentation up in here. Creating pull request ...`)
 
   // https://docs.travis-ci.com/user/environment-variables/
@@ -107,8 +106,10 @@ Hope you can fix it (and my circuits) soon 🙏`
       ref: `refs/heads/${github.branchName}`,
       sha
     }).catch(err => {
+      if (err) {}
       console.robofire('Unable to create a new branch. Do you have access?')
-      return err
+      console.log('')
+      process.exit(1)
     })
   } else {
     console.robolog(`Using existing branch: ${github.branchName} using last sha ${sha}`)
@@ -275,6 +276,7 @@ async function bunchFiles (filesToCheck) {
     }).catch(err => {
       if (err) {}
       console.robofire(`I can't post to a foreign repo! Do you have access?`)
+      console.log('')
       process.exit(1)
     })
 
@@ -341,5 +343,4 @@ ${files.map(file => `- [ ] ${file.note}`).join('\n')}
     body: body
   })
   console.robolog(`Pull request created: ${data.html_url}`)
-  console.log('')
 }
