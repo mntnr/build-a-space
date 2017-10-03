@@ -1,0 +1,22 @@
+language: node_js
+cache:
+  directories:
+    - node_modules
+notifications:
+  email: false
+node_js:
+  - 'node'
+  - '8'
+  - '7'
+before_script:
+  - npm prune
+  - greenkeeper-lockfile-update
+after_success:
+  - npm run semantic-release
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/
+before_install:
+- npm install -g npm@5
+- npm install -g greenkeeper-lockfile@1
+after_script: greenkeeper-lockfile-upload
