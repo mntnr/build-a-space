@@ -2,6 +2,8 @@
 
 const meow = require('meow')
 const fn = require('./index')
+const gitRemoteOriginUrl = require('git-remote-origin-url')
+const gitRemoteUpstreamUrl = require('git-remote-upstream-url')
 
 const cli = meow([`
   Usage
@@ -14,9 +16,17 @@ const cli = meow([`
   alias: {}
 }])
 
+// TODO Make this into it's own module, gh-get-shortname
+function getRepoFromConfig () {
+  return gitRemoteUpstreamUrl()
+    .catch(() => gitRemoteOriginUrl())
+    .then(res => res.match(/([^/:]+\/[^/.]+)(\.git)?$/)[1])
+}
+
 async function letsGo () {
   console.log('')
-  await fn(cli.input[0])
+  const repoName = cli.input[0] || await getRepoFromConfig()
+  await fn(repoName)
   console.log('')
 }
 
