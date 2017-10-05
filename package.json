@@ -1,13 +1,19 @@
 {
   "name": "build-a-space",
   "version": "1.0.0",
-  "description": "",
+  "description": "Automatically add community documentation to your repository",
   "main": "index.js",
   "private": true,
   "scripts": {
     "test": "ava test/lint.js"
   },
-  "keywords": [],
+  "keywords": [
+    "api",
+    "automatic",
+    "bot",
+    "community",
+    "github"
+  ],
   "author": "Richard Littauer <richard.littauer@gmail.com> (https://burntfen.com)",
   "license": "MIT",
   "dependencies": {
@@ -22,5 +28,14 @@
   },
   "devDependencies": {
     "ava": "^0.22.0"
-  }
+  },
+  "homepage": "https://github.com/RichardLitt/build-a-space",
+  "bugs": "https://github.com/RichardLitt/build-a-space/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RichardLitt/build-a-space.git"
+  },
+  "contributors": [
+    "Richard Littauer <richard.littauer@gmail.com> (https://burntfen.com)"
+  ]
 }
