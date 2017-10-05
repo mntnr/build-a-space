@@ -82,7 +82,7 @@ Hope you can fix it (and my circuits) soon 🙏`
 
     const {data: {html_url: issueUrl}} = result
     console.robolog(`🤖🙏 issue created: ${issueUrl}`)
-    return
+    process.exit(1)
   }
 
   if (pullRequestsResult.total_count === 1) {
