@@ -18,7 +18,7 @@ const github = axios.create({
     }
   }
 })
-const lintPackageJson = require('./lib/lintPackageJson.js')
+const lintPackageJson = require('./lib/lintPackageJson.js').lint()
 
 // TODO Check that repoName is valid
 // TODO Export properly
