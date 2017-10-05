@@ -1,5 +1,7 @@
 # Build A Space
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/RichardLitt/build-a-space.svg)](https://greenkeeper.io/)
+
 > Automatically add community documentation to your repository
 
 ## Background
