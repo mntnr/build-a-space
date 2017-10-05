@@ -5,18 +5,22 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava test/lint.js"
   },
   "keywords": [],
   "author": "Richard Littauer <richard.littauer@gmail.com> (https://burntfen.com)",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.16.2",
+    "deep-equal": "^1.0.1",
     "git-remote-origin-url": "^2.0.0",
     "git-remote-upstream-url": "^2.0.0",
     "json-diff": "^0.5.2",
     "meow": "^3.7.0",
     "mz": "^2.7.0",
     "querystring": "^0.2.0"
+  },
+  "devDependencies": {
+    "ava": "^0.22.0"
   }
 }
