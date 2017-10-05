@@ -18,6 +18,7 @@ const github = axios.create({
     }
   }
 })
+const lintPackageJson = require('./lib/lintPackageJson.js')
 
 // TODO Check that repoName is valid
 // TODO Export properly
@@ -40,7 +41,7 @@ async function buildASpace (repoName, diffs) {
   const {data: {login}} = await github.get('/user')
   console.robolog(`Signed in as ${login}. Looking if I already created a pull request.`)
   github.login = login
-  github.branchName = await initPRandBranch()
+  await initPRandBranch()
 
   const communityFiles = await checkCommunityFiles()
 
@@ -144,56 +145,68 @@ async function addJavascriptFiles () {
     console.robowarn('There is no package.json. Is this not checked into npm?')
     return
   }
-  console.robolog('npm file exists! No checks yet implemented, however.')
-  const fileContent = JSON.parse(Buffer.from(npm.content, 'base64'))
-  if (!fileContent.scripts.test || fileContent.scripts.test.indexOf('no test specified') === -1) {
-    // TODO Open an issue suggesting that they add tests
-    // const query = querystring.stringify({
-    //   type: 'issue',
-    //   is: 'open',
-    //   repo: github.repoName
-    // }, 'tests', ':')
 
-    // const testIssueResult = await github.get(`/search/issues?q=${query}`).catch(err => err)
-    // console.log('Here', testIssueResult)
-
-    // const result = await github.post(`/repos/${github.repoName}/issues`, {
-    //   title: 'Add tests',
-    //   body: `No tests are specified in the npm manifest. Do you have tests for this repo yet?`
-    // })
-    //
-    // const {data: {html_url: issueUrl}} = result
-    // console.log(`🤖🙏 issue opened as a reminder to add tests: ${issueUrl}`)
+  const packageFile = {
+    name: 'package',
+    filePath: 'package.json',
+    note: [`Check that nothing drastic happened in the \`package.json\`.`]
   }
-  // TODO Check if the travis file is exactly the same, anyway
+
+  const pkg = JSON.parse(Buffer.from(npm.content, 'base64'))
+  const {pkg: newPkg, notesForUser} = await lintPackageJson(github, pkg)
+  packageFile.note = packageFile.note.concat(notesForUser)
+  packageFile.content = Buffer.from(JSON.stringify(newPkg, null, 2)).toString('base64')
+
+  async function getCurrentSha (filename) {
+    const {data: {sha: currentSha}} = await github.get(`/repos/${github.repoName}/contents/${filename}?ref=${github.branchName}`)
+    return currentSha
+  }
+
+  const commitMessage = {
+    path: packageFile.filePath,
+    message: `chore: updated fields in the package.json
+
+${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
+    `,
+    content: packageFile.content,
+    branch: github.branchName,
+    sha: await getCurrentSha(packageFile.filePath)
+  }
+
+  await github.put(`/repos/${github.repoName}/contents/${packageFile.filePath}?ref=${github.branchName}`, commitMessage).catch(err => {
+    if (err) {
+      console.robowarn('Unable to add package.json file!', err)
+    }
+  })
+
   // If travis file exists
   const travisFile = {
     name: 'travis',
     filePath: '.travis.yml',
-    note: 'Check if .travis.yml was overwritten or not.'
+    note: ['Check if .travis.yml was overwritten or not.']
   }
 
   travisFile.content = await fs.readFileSync(path.join(__dirname, `fixtures/js/${travisFile.filePath}`)).toString('base64')
-  await github.put(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`, {
-    path: travisFile.filePath,
-    message: 'ci: adding travis file with Greenkeeper and semantic-release enabled',
-    content: travisFile.content,
-    branch: github.branchName
-  }).catch(err => {
-    if (err) {
-      console.robowarn('Unable to add travis file!')
-    }
-  })
+  const {data: {content: existingFile}} = await github.get(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`)
+  if (Buffer.from(existingFile, 'base64').toString('base64') !== travisFile.content) {
+    await github.put(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`, {
+      path: travisFile.filePath,
+      message: 'ci: adding travis file with Greenkeeper and semantic-release enabled',
+      content: travisFile.content,
+      branch: github.branchName,
+      sha: await getCurrentSha(travisFile.filePath)
+    }).catch(err => {
+      if (err) {
+        console.robowarn('Unable to add travis file!')
+      }
+    })
+
+    toCheck.push(travisFile)
+  }
+
   // TODO Open issue to enable greenkeeper
 
-  toCheck.push(travisFile)
-
-  // TODO Check that the package description matches GitHub description
-  // TODO Check that the keywords match GitHub topics
-  // TODO Check that the homepapge exists
-  // TODO Check that `bugs` matches GitHub URL
-  // TODO Check that the license matches
-  // TODO Check that the repository matches
+  toCheck.push(packageFile)
 
   return toCheck
 }
@@ -210,24 +223,24 @@ async function checkCommunityFiles () {
     {
       name: 'readme',
       filePath: 'README.md',
-      note: 'Update your README. It is only specced out, and will need more work. I suggest [standard-readme](https://github.com/RichardLitt/standard-readme) for this.'
+      note: ['Update your README. It is only specced out, and will need more work. I suggest [standard-readme](https://github.com/RichardLitt/standard-readme) for this.']
     },
     {
       name: 'license',
       // TODO You don't need all caps for License, and it doesn't need to be a markdown file
       filePath: 'LICENSE',
-      note: `Check that the license name and year is correct. I've added the MIT license, which should suit most purposes.`
+      note: [`Check that the license name and year is correct. I've added the MIT license, which should suit most purposes.`]
     },
     // TODO Parse in the Contributing section from the README
     {
       name: 'contributing',
       filePath: 'CONTRIBUTING.md',
-      note: 'Update the Contributing guide to include any repository-specific requests, or to point to a global Contributing document.'
+      note: ['Update the Contributing guide to include any repository-specific requests, or to point to a global Contributing document.']
     },
     {
       name: 'code_of_conduct',
       filePath: 'CODE_OF_CONDUCT.md',
-      note: 'Update the email address in the Code of Conduct: the default is currently richard.littauer@gmail.com.'
+      note: ['Update the email address in the Code of Conduct: the default is currently richard.littauer@gmail.com.']
     }
   ]
 
@@ -341,9 +354,10 @@ You are missing some important community files. I am adding them here for you!
 
 Here are some things you should do manually before merging this Pull Request:
 
-${files.map(file => `- [ ] ${file.note}`).join('\n')}
+${files.map(file => file.note.map(note => `- [ ] ${note}`).join('\n')).join('\n')}
 `
   console.robolog(`Creating pull request`)
+
   const {data} = await github.post(`/repos/${github.repoName}/pulls`, {
     title: `Add community documentation`,
     head: github.branchName,
