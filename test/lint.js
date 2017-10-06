@@ -40,7 +40,7 @@ test('homepage will add a note it does exist and doesnt match', async t => {
   const pkg = {repository: true}
   const notes = []
   await lint.checkRepository(pkg, 'test/test', notes)
-  t.is(notes[0], 'We expected the repository url in the `package.json` to be https://github.com/test/test.git, and it wasn\'t. Is this intentional?')
+  t.is(notes[0], 'We expected the repository url in the `package.json` to be https://github.com/test/test, and it wasn\'t. Is this intentional?')
 })
 
 test('homepage will not add a note if does exist and is expected', async t => {
