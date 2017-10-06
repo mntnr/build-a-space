@@ -16,6 +16,8 @@ The point is to make building a space for community to grow _easier_. This stuff
 
 This hasn't been set up for more than cloning, yet. Clone.
 
+You'll need a [GitHub token](https://github.com/settings/tokens). Put it in the `env.js` file, or in a `$BUILD_A_SPACE` token in your environment.
+
 ## Usage
 
 ```
