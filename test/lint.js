@@ -1,5 +1,14 @@
 const test = require('ava').test
 const lint = require('../lib/lintPackageJson.js')
+const axios = require('axios')
+const console = require('../lib/robo')
+
+const github = axios.create({
+  baseURL: 'https://api.example.com',
+  headers: {
+    common: {}
+  }
+})
 
 // checkHomepage
 test('homepage will update if it does not exist', async t => {
@@ -53,4 +62,27 @@ test('homepage will not add a note if does exist and is expected', async t => {
   const notes = []
   await lint.checkRepository(pkg, 'test/test', notes)
   t.deepEqual(notes, [])
+})
+
+// checkKeywords
+// TODO Find ways of hitting actual API and testing these
+// TODO Finish testing checkKeywords
+test('checkKeywords will do nothing if there are no topics', async t => {
+  const github = null
+  const pkg = {keywords: []}
+  const notesForUser = []
+  const topics = []
+  await lint.checkKeywords(github, pkg, topics, notesForUser)
+  t.deepEqual(pkg.keywords, [])
+  t.deepEqual(notesForUser, [])
+})
+
+test('checkKeywords will return nothing if github is not working', async t => {
+  github.repoName = 'test'
+  const pkg = {keywords: ['fail']}
+  const topics = ['test']
+  const notesForUser = []
+  const err = await lint.checkKeywords(github, pkg, topics, notesForUser)
+  t.is(notesForUser.includes('Add these keywords (from your `package.json` as GitHub topics to your repo: "test", "fail".'), true)
+  t.is(err, undefined)
 })
