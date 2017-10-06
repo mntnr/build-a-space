@@ -180,6 +180,8 @@ ${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
     }
   })
 
+  toCheck.push(packageFile)
+
   // If travis file exists
   const travisFile = {
     name: 'travis',
@@ -188,26 +190,30 @@ ${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
   }
 
   travisFile.content = await fs.readFileSync(path.join(__dirname, `fixtures/js/${travisFile.filePath}`)).toString('base64')
-  const {data: {content: existingFile}} = await github.get(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`)
-  if (Buffer.from(existingFile, 'base64').toString('base64') !== travisFile.content) {
-    await github.put(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`, {
-      path: travisFile.filePath,
-      message: 'ci: adding travis file with Greenkeeper and semantic-release enabled',
-      content: travisFile.content,
-      branch: github.branchName,
-      sha: await getCurrentSha(travisFile.filePath)
-    }).catch(err => {
-      if (err) {
-        console.robowarn('Unable to add travis file!')
-      }
+  const {status: travisStatus, data: travisContent} = await github.get(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`)
+    .catch(err => {
+      console.robolog('Unable to find travis file.')
+      return err.response
     })
+  if (travisStatus !== 404) {
+    if (Buffer.from(travisContent.content, 'base64').toString('base64') !== travisFile.content) {
+      await github.put(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`, {
+        path: travisFile.filePath,
+        message: 'ci: adding travis file with Greenkeeper and semantic-release enabled',
+        content: travisFile.content,
+        branch: github.branchName,
+        sha: await getCurrentSha(travisFile.filePath)
+      }).catch(err => {
+        if (err) {
+          console.robowarn('Unable to add travis file!')
+        }
+      })
 
-    toCheck.push(travisFile)
+      toCheck.push(travisFile)
+    }
   }
 
   // TODO Open issue to enable greenkeeper
-
-  toCheck.push(packageFile)
 
   return toCheck
 }
