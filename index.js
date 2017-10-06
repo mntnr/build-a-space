@@ -159,7 +159,10 @@ async function addJavascriptFiles () {
 
   async function getCurrentSha (filename) {
     const {data: {sha: currentSha}} = await github.get(`/repos/${github.repoName}/contents/${filename}?ref=${github.branchName}`)
-      .catch(err => console.robofire('Unable to get current sha, most likely due to undefined branch.'))
+      .catch(err => {
+        if (err) {}
+        console.robofire('Unable to get current sha, most likely due to undefined branch.')
+      })
     return currentSha
   }
 
