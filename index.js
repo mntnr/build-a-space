@@ -18,7 +18,7 @@ const github = axios.create({
     }
   }
 })
-const lintPackageJson = require('./lib/lintPackageJson.js').lint()
+const lintPackageJson = require('./lib/lintPackageJson.js')
 
 // TODO Check that repoName is valid
 // TODO Export properly
@@ -153,7 +153,7 @@ async function addJavascriptFiles () {
   }
 
   const pkg = JSON.parse(Buffer.from(npm.content, 'base64'))
-  const {pkg: newPkg, notesForUser} = await lintPackageJson(github, pkg)
+  const {pkg: newPkg, notesForUser} = await lintPackageJson.lint(github, pkg)
   packageFile.note = packageFile.note.concat(notesForUser)
   packageFile.content = Buffer.from(JSON.stringify(newPkg, null, 2)).toString('base64')
 
