@@ -159,6 +159,7 @@ async function addJavascriptFiles () {
 
   async function getCurrentSha (filename) {
     const {data: {sha: currentSha}} = await github.get(`/repos/${github.repoName}/contents/${filename}?ref=${github.branchName}`)
+      .catch(err => console.robofire('Unable to get current sha, most likely due to undefined branch.'))
     return currentSha
   }
 
@@ -283,9 +284,19 @@ async function bunchFiles (filesToCheck) {
     data: {commit: {sha: currentCommitSha}},
     data: {commit: {commit: {tree: {sha: treeSha}}}}
   } = await github.get(`/repos/${github.repoName}/branches/master`)
+    .catch(err => {
+      if (err) {
+        console.robowarn('Unable to get commit information to bunch files')
+      }
+    })
 
   // retrieve the content of the blob object that tree has for that particular file path
   const {data: {tree}} = await github.get(`/repos/${github.repoName}/git/trees/${treeSha}`)
+    .catch(err => {
+      if (err) {
+        console.robowarn('Unable to get tree')
+      }
+    })
 
   async function getFileBlob (file) {
     console.robolog(`Adding ${file.name} file`)
