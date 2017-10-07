@@ -77,6 +77,15 @@ test('checkKeywords will do nothing if there are no topics', async t => {
   t.deepEqual(notesForUser, [])
 })
 
+test('checkKeywords will create a keywords field if it doesn\'t exist', async t => {
+  const github = null
+  const pkg = {}
+  const notesForUser = []
+  const topics = []
+  await lint.checkKeywords(github, pkg, topics, notesForUser)
+  t.deepEqual(pkg.keywords, [])
+})
+
 test('checkKeywords will return nothing if github is not working', async t => {
   github.repoName = 'test'
   const pkg = {keywords: ['fail']}
