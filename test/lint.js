@@ -3,6 +3,11 @@ const lint = require('../lib/lintPackageJson.js')
 const axios = require('axios')
 const console = require('../lib/robo')
 
+// Silence all consoles. Brittle, but works.
+if (process.env.npm_config_argv.indexOf('--verbose') === -1) {
+  console.robolog = console.robofire = console.robowarn = () => {}
+}
+
 const github = axios.create({
   baseURL: 'https://api.example.com',
   headers: {
