@@ -12,9 +12,9 @@ const cli = meow([`
   Options
 
   Examples
-`, {
+`], {
   alias: {}
-}])
+})
 
 // TODO Make this into it's own module, gh-get-shortname
 function getRepoFromConfig () {
