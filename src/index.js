@@ -18,9 +18,6 @@ const github = axios.create({
   }
 })
 
-// TODO Check that repoName is valid
-// TODO Export properly
-
 module.exports = async function index (repoName, opts) {
   // https://docs.travis-ci.com/user/environment-variables/
   // TODO Set a sensible repo env
