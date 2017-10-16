@@ -97,6 +97,6 @@ test('checkKeywords will return nothing if github is not working', async t => {
   const topics = ['test']
   const notesForUser = []
   const err = await lint.checkKeywords(github, pkg, topics, notesForUser)
-  t.is(notesForUser.includes('Add these keywords (from your `package.json` as GitHub topics to your repo: "test", "fail".'), true)
+  t.is(notesForUser.includes('Add these keywords (from your `package.json`) as GitHub topics to your repo: "test", "fail".'), true)
   t.is(err, undefined)
 })
