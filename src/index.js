@@ -102,7 +102,7 @@ async function initPR (github, opts) {
   // console.robolog(`pull-request updated: ${pullRequest.html_url}`)
   } else {
     console.robolog('No existing pull request found')
-    github.branchName = `docs/boost-vitality/${new Date().toISOString().substr(0, 10)}`
+    github.branchName = `docs/${new Date().toISOString().substr(0, 10)}`
   }
 
   console.robolog(`Looking for last commit sha of ${github.repoName}/git/refs/heads/master`)
