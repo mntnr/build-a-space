@@ -236,7 +236,7 @@ async function checkCommunityFiles () {
   let toCheck = []
 
   async function existsInBranch (file) {
-    if (!community.files[file.name]) {
+    if (community && !community.files[file.name]) {
       // Check if file exists already in the branch
       const {status} = await github.get(`/repos/${github.targetRepo}/contents/${file.filePath}?ref=${github.branchName}`)
       .catch(err => err)
