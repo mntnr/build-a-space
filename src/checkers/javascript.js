@@ -1,3 +1,5 @@
+const atob = require('atob')
+const btoa = require('btoa')
 const fs = require('mz/fs')
 const path = require('path')
 const lintPackageJson = require('../../lib/lintPackageJson.js')
@@ -28,26 +30,33 @@ module.exports = async function addJavascriptFiles (github) {
   const pkg = JSON.parse(Buffer.from(npm.content, 'base64'))
   const {pkg: newPkg, notesForUser} = await lintPackageJson.lint(github, pkg)
   packageFile.note = packageFile.note.concat(notesForUser)
-  packageFile.content = Buffer.from(JSON.stringify(newPkg, null, 2)).toString('base64')
+  packageFile.content = btoa(JSON.stringify(newPkg, null, 2))
 
-  const commitMessage = {
-    path: packageFile.filePath,
-    message: `chore: updated fields in the package.json
+  const {data: {content: fileOnBranch}} = await github.get(`/repos/${github.targetRepo}/contents/package.json?ref=${github.branchName}`)
 
-${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
-    `,
-    content: packageFile.content,
-    branch: github.branchName,
-    sha: await getCurrentSha(github, packageFile.filePath)
-  }
+  // If the content is the same, don't add a new commit
+  // Shim them in and out to make sure that there's no formatting differences
+  if (btoa(atob(packageFile.content)) !== btoa(atob(fileOnBranch))) {
+    const commitMessage = {
+      path: packageFile.filePath,
+      message: `chore: updated fields in the package.json
 
-  await github.put(`/repos/${github.targetRepo}/contents/${packageFile.filePath}?ref=${github.branchName}`, commitMessage).catch(err => {
-    if (err) {
-      console.robowarn('Unable to add package.json file!', err)
+      ${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
+      `,
+      content: packageFile.content,
+      branch: github.branchName,
+      sha: await getCurrentSha(github, packageFile.filePath)
     }
-  })
 
-  toCheck.push(packageFile)
+    await github.put(`/repos/${github.targetRepo}/contents/${packageFile.filePath}?ref=${github.branchName}`, commitMessage)
+    .catch(err => {
+      if (err) {
+        console.robowarn('Unable to add package.json file!', err)
+      }
+    })
+
+    toCheck.push(packageFile)
+  }
 
   // If travis file exists
   const travisFile = {
