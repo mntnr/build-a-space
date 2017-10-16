@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const meow = require('meow')
-const fn = require('./index')
+const fn = require('./src/index')
 const gitRemoteOriginUrl = require('git-remote-origin-url')
 const gitRemoteUpstreamUrl = require('git-remote-upstream-url')
 
