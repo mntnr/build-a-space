@@ -7,13 +7,18 @@ const gitRemoteUpstreamUrl = require('git-remote-upstream-url')
 
 const cli = meow([`
   Usage
-    $ enable-community <input> [opts]
+    $ build-a-space <input> [opts]
 
   Options
+    -t, --test  Don't open issues or create pull requests
 
   Examples
+    $ build-a-space RichardLitt/build-a-space
 `], {
-  alias: {}
+  boolean: ['test'],
+  alias: {
+    't': 'test'
+  }
 })
 
 // TODO Make this into it's own module, gh-get-shortname
@@ -26,7 +31,7 @@ function getRepoFromConfig () {
 async function letsGo () {
   console.log('')
   const repoName = cli.input[0] || await getRepoFromConfig()
-  await fn(repoName)
+  await fn(repoName, cli.flags)
   console.log('')
 }
 

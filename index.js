@@ -24,7 +24,7 @@ const lintPackageJson = require('./lib/lintPackageJson.js')
 // TODO Check that repoName is valid
 // TODO Export properly
 
-async function buildASpace (repoName, diffs) {
+async function buildASpace (repoName, opts) {
   // https://docs.travis-ci.com/user/environment-variables/
   github.repoName = repoName || env.TRAVIS_REPO_SLUG
 
@@ -43,17 +43,17 @@ async function buildASpace (repoName, diffs) {
   console.robolog(`Signed in as ${user.login}. Looking if I already created a pull request.`)
   // console.log(user)
   github.user = user.login
-  await initPRandBranch()
+  await initPRandBranch(opts)
 
   const communityFiles = await checkCommunityFiles()
 
   const files = await bunchFiles(communityFiles)
   const jsFiles = await addJavascriptFiles()
 
-  await createPullRequest(files.concat(jsFiles))
+  await createPullRequest(files.concat(jsFiles), opts)
 }
 
-async function initPRandBranch () {
+async function initPRandBranch (opts) {
   // Do I have a pending pull request?
   const query = querystring.stringify({
     type: 'pr',
@@ -69,9 +69,10 @@ async function initPRandBranch () {
   // I don’t know which one to update. So I’ll ask you for help :)
   if (pullRequestsResult.total_count > 1) {
     console.robolog('🤖🆘 Oh oh, I don’t know how to handle more than one pull requests. Creating an issue for my human friends')
-    const result = await github.post(`/repos/${github.repoName}/issues`, {
-      title: '🤖🆘 Too many PRs',
-      body: `Dearest humans,
+    if (!opts.test) {
+      const result = await github.post(`/repos/${github.repoName}/issues`, {
+        title: '🤖🆘 Too many PRs',
+        body: `Dearest humans,
 
 I've run into a problem here. I am trying to update the community docs and to get this repo up-to-scratch. I would usually create a new pull request to let you know about it, or update an existing one. But now there more than one: ${pullRequestNumbers.map(number => `#${number}`).join(', ')}
 
@@ -80,10 +81,13 @@ I don’t know how that happened, did I short-circuit again?
 You could really help me by closing all pull requests or leave the one open you want me to keep updating.
 
 Hope you can fix it (and my circuits) soon 🙏`
-    })
+      })
 
-    const {data: {html_url: issueUrl}} = result
-    console.robolog(`🤖🙏 issue created: ${issueUrl}`)
+      const {data: {html_url: issueUrl}} = result
+      console.robolog(`🤖🙏 issue created: ${issueUrl}`)
+    } else {
+      console.robolog(`🤖🙏 issue not created, because test.`)
+    }
     process.exit(1)
   }
 
@@ -373,7 +377,7 @@ async function bunchFiles (filesToCheck) {
   return filesToCheck
 }
 
-async function createPullRequest (files) {
+async function createPullRequest (files, opts) {
   if (github.branchName === 'master') {
     console.robolog(`No changes (you've run this already), or there is some other issue.`)
     console.log()
@@ -398,11 +402,15 @@ ${joinNotes(files)}
 `
   console.robolog(`Creating pull request`)
 
-  const {data} = await github.post(`/repos/${github.repoName}/pulls`, {
-    title: `Add community documentation`,
-    head: github.branchName,
-    base: 'master',
-    body: body
-  })
-  console.robolog(`Pull request created: ${data.html_url}`)
+  if (!opts.test) {
+    const {data} = await github.post(`/repos/${github.repoName}/pulls`, {
+      title: `Add community documentation`,
+      head: github.branchName,
+      base: 'master',
+      body: body
+    })
+    console.robolog(`Pull request created: ${data.html_url}`)
+  } else {
+    console.robolog(`Pull request not created, because tests.`)
+  }
 }
