@@ -4,6 +4,7 @@ const querystring = require('querystring')
 const fs = require('mz/fs')
 const path = require('path')
 const axios = require('axios')
+const btoa = require('btoa')
 const env = require('./env')
 const console = require('./lib/robo')
 const github = axios.create({
@@ -38,9 +39,10 @@ async function buildASpace (repoName, diffs) {
   console.robolog(`Let's get some documentation up in here. Creating pull request ...`)
 
   // who am I?
-  const {data: {login}} = await github.get('/user')
-  console.robolog(`Signed in as ${login}. Looking if I already created a pull request.`)
-  github.login = login
+  const {data: user} = await github.get('/user')
+  console.robolog(`Signed in as ${user.login}. Looking if I already created a pull request.`)
+  // console.log(user)
+  github.user = user.login
   await initPRandBranch()
 
   const communityFiles = await checkCommunityFiles()
@@ -55,7 +57,7 @@ async function initPRandBranch () {
   // Do I have a pending pull request?
   const query = querystring.stringify({
     type: 'pr',
-    author: github.login,
+    author: github.user.login,
     is: 'open',
     repo: github.repoName
   }, ' ', ':')
@@ -250,7 +252,7 @@ async function checkCommunityFiles () {
     {
       name: 'code_of_conduct',
       filePath: 'CODE_OF_CONDUCT.md',
-      note: ['Update the email address in the Code of Conduct: the default is currently richard.littauer@gmail.com.']
+      note: []
     }
   ]
 
@@ -267,13 +269,23 @@ async function checkCommunityFiles () {
         if (file.name === 'readme') {
           fileContent = Buffer.from(`# ${github.repoName.split('/')[1]}
 
-TODO This needs to be filled out!`).toString('base64')
+TODO This needs to be filled out!`)
+
           console.robowarn('You need to fill out the README manually!')
+
+          file.content = fileContent.toString('base64')
         } else {
-          fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${file.filePath}`)).toString('base64')
+          fileContent = await fs.readFileSync(path.join(__dirname, `fixtures/${file.filePath}`))
+            .toString('utf8')
+
+          if (file.name === 'code_of_conduct') {
+            fileContent = fileContent.replace('[INSERT EMAIL ADDRESS]', github.user.email)
+            file.note.push(`Check the email in the Code of Conduct. We've added in ${github.user.email}.`)
+          }
+
+          file.content = btoa(fileContent)
         }
 
-        file.content = fileContent
         toCheck.push(file)
       }
     }
