@@ -10,13 +10,15 @@ const cli = meow([`
     $ build-a-space <input> [opts]
 
   Options
+    -f, --fork  Create and use a fork instead of pushing to a branch
     -t, --test  Don't open issues or create pull requests
 
   Examples
     $ build-a-space RichardLitt/build-a-space
 `], {
-  boolean: ['test'],
+  boolean: ['fork', 'test'],
   alias: {
+    'f': 'fork',
     't': 'test'
   }
 })

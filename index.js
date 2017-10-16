@@ -19,6 +19,7 @@ const github = axios.create({
     }
   }
 })
+const githubHelpers = require('./lib/githubHelpers.js')
 const lintPackageJson = require('./lib/lintPackageJson.js')
 
 // TODO Check that repoName is valid
@@ -41,13 +42,19 @@ async function buildASpace (repoName, opts) {
   // who am I?
   const {data: user} = await github.get('/user')
   console.robolog(`Signed in as ${user.login}. Looking if I already created a pull request.`)
-  // console.log(user)
-  github.user = user.login
+  github.user = user
+
+  if (opts.fork) {
+    github.targetRepo = await githubHelpers.getOrCreateFork(github, opts)
+  } else {
+    github.targetRepo = github.repoName
+  }
+
   await initPRandBranch(opts)
 
   const communityFiles = await checkCommunityFiles()
 
-  const files = await bunchFiles(communityFiles)
+  const files = await githubHelpers.bunchFiles(github, communityFiles)
   const jsFiles = await addJavascriptFiles()
 
   await createPullRequest(files.concat(jsFiles), opts)
@@ -100,35 +107,15 @@ Hope you can fix it (and my circuits) soon 🙏`
   // TODO Enable existing pull request to be fixed and added to
   // await updateFixtures({diffs, github, github.repoName, branchName})
   // console.robolog(`pull-request updated: ${pullRequest.html_url}`)
+  } else {
+    console.robolog('No existing pull request found')
+    github.branchName = `docs/boost-vitality/${new Date().toISOString().substr(0, 10)}`
   }
-
-  console.robolog('No existing pull request found')
 
   console.robolog(`Looking for last commit sha of ${github.repoName}/git/refs/heads/master`)
   const {data: {object: {sha}}} = await github.get(`/repos/${github.repoName}/git/refs/heads/master`)
 
-  github.branchName = `docs/boost-vitality/${new Date().toISOString().substr(0, 10)}`
-
-  // Gets a 422 sometimes
-  const branchExists = await github.get(`/repos/${github.repoName}/branches/${github.branchName}`)
-    .catch(err => {
-      if (err) {
-        console.robolog(`Creating new branch: ${github.branchName} using last sha ${sha}`)
-      } // do nothing
-    })
-  if (!branchExists) {
-    await github.post(`/repos/${github.repoName}/git/refs`, {
-      ref: `refs/heads/${github.branchName}`,
-      sha
-    }).catch(err => {
-      if (err) {}
-      console.robofire('Unable to create a new branch. Do you have access?')
-      console.log('')
-      process.exit(1)
-    })
-  } else {
-    console.robolog(`Using existing branch: ${github.branchName} using last sha ${sha}`)
-  }
+  await githubHelpers.getOrCreateBranch(github, sha)
 }
 
 async function addJavascriptFiles () {
@@ -158,15 +145,6 @@ async function addJavascriptFiles () {
   packageFile.note = packageFile.note.concat(notesForUser)
   packageFile.content = Buffer.from(JSON.stringify(newPkg, null, 2)).toString('base64')
 
-  async function getCurrentSha (filename) {
-    const {data: {sha: currentSha}} = await github.get(`/repos/${github.repoName}/contents/${filename}?ref=${github.branchName}`)
-      .catch(err => {
-        if (err) {}
-        console.robofire('Unable to get current sha, most likely due to undefined branch.')
-      })
-    return currentSha
-  }
-
   const commitMessage = {
     path: packageFile.filePath,
     message: `chore: updated fields in the package.json
@@ -175,10 +153,10 @@ ${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
     `,
     content: packageFile.content,
     branch: github.branchName,
-    sha: await getCurrentSha(packageFile.filePath)
+    sha: await githubHelpers.getCurrentSha(github, packageFile.filePath)
   }
 
-  await github.put(`/repos/${github.repoName}/contents/${packageFile.filePath}?ref=${github.branchName}`, commitMessage).catch(err => {
+  await github.put(`/repos/${github.targetRepo}/contents/${packageFile.filePath}?ref=${github.branchName}`, commitMessage).catch(err => {
     if (err) {
       console.robowarn('Unable to add package.json file!', err)
     }
@@ -201,12 +179,12 @@ ${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
     })
   if (travisStatus !== 404) {
     if (Buffer.from(travisContent.content, 'base64').toString('base64') !== travisFile.content) {
-      await github.put(`/repos/${github.repoName}/contents/${travisFile.filePath}?ref=${github.branchName}`, {
+      await github.put(`/repos/${github.targetRepo}/contents/${travisFile.filePath}?ref=${github.branchName}`, {
         path: travisFile.filePath,
         message: 'ci: adding travis file with Greenkeeper and semantic-release enabled',
         content: travisFile.content,
         branch: github.branchName,
-        sha: await getCurrentSha(travisFile.filePath)
+        sha: await githubHelpers.getCurrentSha(github, travisFile.filePath)
       }).catch(err => {
         if (err) {
           console.robowarn('Unable to add travis file!')
@@ -260,7 +238,7 @@ async function checkCommunityFiles () {
   async function existsInBranch (file) {
     if (!community.files[file.name]) {
       // Check if file exists already in the branch
-      const {status} = await github.get(`/repos/${github.repoName}/contents/${file.filePath}?ref=${github.branchName}`)
+      const {status} = await github.get(`/repos/${github.targetRepo}/contents/${file.filePath}?ref=${github.branchName}`)
       .catch(err => err)
       if (status !== 200) {
         let fileContent
@@ -295,83 +273,6 @@ TODO This needs to be filled out!`)
   return toCheck
 }
 
-// This function bunches up multiple file changes into the same commit.
-// It depends on a files object: { name, filepath, content, note }.
-async function bunchFiles (filesToCheck) {
-  // Always work off of master, for now. TODO Enable other dev branches
-  // get the current commit object and current tree
-  const {
-    data: {commit: {sha: currentCommitSha}},
-    data: {commit: {commit: {tree: {sha: treeSha}}}}
-  } = await github.get(`/repos/${github.repoName}/branches/master`)
-    .catch(err => {
-      if (err) {
-        console.robowarn('Unable to get commit information to bunch files')
-      }
-    })
-
-  // retrieve the content of the blob object that tree has for that particular file path
-  const {data: {tree}} = await github.get(`/repos/${github.repoName}/git/trees/${treeSha}`)
-    .catch(err => {
-      if (err) {
-        console.robowarn('Unable to get tree')
-      }
-    })
-
-  async function getFileBlob (file) {
-    console.robolog(`Adding ${file.name} file`)
-
-    // Create a blob
-    const {data: blob} = await github.post(`/repos/${github.repoName}/git/blobs`, {
-      content: file.content,
-      encoding: 'base64'
-    }).catch(err => {
-      if (err) {}
-      console.robofire(`I can't post to a foreign repo! Do you have access?`)
-      console.log('')
-      process.exit(1)
-    })
-
-    return {
-      mode: '100644',
-      type: 'blob',
-      path: file.filePath, // Puts them all in the base directory for now
-      sha: blob.sha,
-      url: blob.url
-    }
-  }
-
-  // change the content somehow and post a new blob object with that new content, getting a blob SHA back
-  const newBlobs = await Promise.all(filesToCheck.map(async file => getFileBlob(file)))
-
-  if (newBlobs.length !== 0) {
-    const newTree = tree.concat(newBlobs)
-
-    // post a new tree object with that file path pointer replaced with your new blob SHA getting a tree SHA back
-    const {data: {sha: newTreeSha}} = await github.post(`/repos/${github.repoName}/git/trees`, {
-      tree: newTree,
-      base_tree: treeSha
-    })
-
-    // create a new commit object with the current commit SHA as the parent and the new tree SHA, getting a commit SHA back
-    const {data: {sha: newCommitSha}} = await github.post(`/repos/${github.repoName}/git/commits`, {
-      message: `docs: adding community docs`,
-      tree: newTreeSha,
-      parents: [currentCommitSha]
-    })
-
-    // update the reference of your branch to point to the new commit SHA
-    await github.post(`/repos/${github.repoName}/git/refs/heads/${github.branchName}`, {
-      sha: newCommitSha
-    }).catch(err => {
-      if (err) {
-        console.log('Unable to update refs with new commit')
-      }
-    })
-  }
-  return filesToCheck
-}
-
 async function createPullRequest (files, opts) {
   if (github.branchName === 'master') {
     console.robolog(`No changes (you've run this already), or there is some other issue.`)
@@ -400,7 +301,9 @@ ${joinNotes(files)}
   if (!opts.test) {
     const {data} = await github.post(`/repos/${github.repoName}/pulls`, {
       title: `Add community documentation`,
-      head: github.branchName,
+      // Where changes are implemented. Format: `username:branch`.
+      head: `${github.targetRepo.split('/')[0]}:${github.branchName}`,
+      // TODO Use default_branch across tool, not just `master` branch
       base: 'master',
       body: body
     })
