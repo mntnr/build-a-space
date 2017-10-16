@@ -380,13 +380,21 @@ async function createPullRequest (files) {
     return
   }
 
+  function joinNotes (arr) {
+    return arr.map(file => {
+      if (file) {
+        return file.note.map(note => `- [ ] ${note}`).join('\n')
+      }
+    }).join('\n')
+  }
+
   const body = `Dearest humans,
 
 You are missing some important community files. I am adding them here for you!
 
 Here are some things you should do manually before merging this Pull Request:
 
-${files.map(file => file.note.map(note => `- [ ] ${note}`).join('\n')).join('\n')}
+${joinNotes(files)}
 `
   console.robolog(`Creating pull request`)
 
