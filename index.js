@@ -299,15 +299,25 @@ ${joinNotes(files)}
   console.robolog(`Creating pull request`)
 
   if (!opts.test) {
-    const {data} = await github.post(`/repos/${github.repoName}/pulls`, {
+    const res = await github.post(`/repos/${github.repoName}/pulls`, {
       title: `Add community documentation`,
       // Where changes are implemented. Format: `username:branch`.
       head: `${github.targetRepo.split('/')[0]}:${github.branchName}`,
       // TODO Use default_branch across tool, not just `master` branch
       base: 'master',
       body: body
+    }).catch(async err => {
+      const {data: {commit: {sha: oldBranch}}} = await github.get(`/repos/${github.repoName}/branches/master`)
+      const {data: {commit: {sha: newBranch}}} = await github.get(`/repos/${github.targetRepo}/branches/${github.branchName}`)
+      if (oldBranch === newBranch) {
+        console.robofire(`Unable to create PR because there is no content.`)
+      } else {
+        console.robofire(`Unable to create PR inexplicably.`, err)
+      }
     })
-    console.robolog(`Pull request created: ${data.html_url}`)
+    if (res) {
+      console.robolog(`Pull request created: ${res.data.html_url}`)
+    }
   } else {
     console.robolog(`Pull request not created, because tests.`)
   }
