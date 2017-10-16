@@ -131,11 +131,6 @@ Hope you can fix it (and my circuits) soon 🙏`
   }
 }
 
-// TODO Lint the README
-// async function lintReadme () {
-//   console.robolog(`README linting not yet enabled`)
-// }
-
 async function addJavascriptFiles () {
   // Is this a JS repo?
   const {data: language} = await github.get(`/repos/${github.repoName}`)
