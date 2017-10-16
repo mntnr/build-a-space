@@ -186,7 +186,9 @@ async function createPullRequest (github, files, opts) {
 
   console.robolog(`Creating pull request`)
 
-  if (!opts.test) {
+  if (opts.test) {
+    console.robolog(`Pull request not created, because tests.`)
+  } else {
     const res = await github.post(`/repos/${github.repoName}/pulls`, {
       title: messages.pr.title,
       // Where changes are implemented. Format: `username:branch`.
@@ -200,7 +202,5 @@ async function createPullRequest (github, files, opts) {
     if (res) {
       console.robolog(`Pull request created: ${res.data.html_url}`)
     }
-  } else {
-    console.robolog(`Pull request not created, because tests.`)
   }
 }
