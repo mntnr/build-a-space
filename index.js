@@ -120,7 +120,7 @@ Hope you can fix it (and my circuits) soon 🙏`
 
 async function addJavascriptFiles () {
   // Is this a JS repo?
-  const {data: language} = await github.get(`/repos/${github.repoName}`)
+  const {data: {language}} = await github.get(`/repos/${github.repoName}`)
   if (language !== 'JavaScript') return
 
   console.robolog('Assuming this is a JavaScript repository, checking...')
