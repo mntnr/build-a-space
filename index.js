@@ -8,7 +8,7 @@ const btoa = require('btoa')
 const env = require('./env')
 const console = require('./lib/robo')
 const github = axios.create({
-  baseURL: 'https://api.github.com',
+  baseURL: env.BASE_URL,
   headers: {
     common: {
       authorization: `token ${env.BUILD_A_SPACE}`,
