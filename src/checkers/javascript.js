@@ -57,7 +57,10 @@ module.exports = async function addJavascriptFiles (github) {
 
   // Only commit if there is already a travis file
   const travisStatus = await checkStatus(github, travisFile)
-  if (travisStatus !== 404) {
+  if (travisStatus === 404) {
+    travisFile.note = [`Consider adding Travis. Tests are great!`]
+    toCheck.push(travisFile)
+  } else {
     // Get the content of the template
     travisFile.content = await fs.readFileSync(path.join(__dirname, `../../fixtures/js/${travisFile.path}`)).toString('base64')
     // If it isn't the same on the branch
