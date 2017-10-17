@@ -1,0 +1,8 @@
+{
+  "name": "manifest",
+  "note": ["Fix up the manifest file"],
+  "path": "manifest.json",
+  "addNewFile": true,
+  "contentPath": "examples/pluginExampleTemplate.json",
+  "message": "chore: adding a manifest file"
+}

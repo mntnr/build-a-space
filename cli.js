@@ -17,6 +17,7 @@ const cli = meow({
     -t, --test  Don't open issues or create pull requests
     -c, --config  The path to a configuration file
     -b, --branch  The default branch to use instead of 'master'
+    -p, --plugin    The JSON file for the plugin
     --email     The email for the Code of Conduct
     --licensee  The person to license the repository to
     --travis    Edit the travis file
@@ -63,6 +64,10 @@ const cli = meow({
     'version': {
       type: 'boolean',
       alias: 'v'
+    },
+    'plugin': {
+      type: 'string',
+      alias: 'p'
     }
   }
 })
