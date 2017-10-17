@@ -96,6 +96,13 @@ async function initPR (github, opts) {
     console.robolog(`Existing pull-request found: ${pullRequest.html_url}`)
 
     const {data} = await github.get(`/repos/${github.repoName}/pulls/${pullRequest.number}`)
+
+    if (data.head.ref.indexOf('docs') === -1) {
+      console.robofire(`Existing branch doesn't look like it was made by this tool! Abort!`)
+      console.log()
+      process.exit(1)
+    }
+
     github.branchName = data.head.ref // as branchName
   // TODO Enable existing pull request to be fixed and added to
   // await updateFixtures({diffs, github, github.repoName, branchName})
