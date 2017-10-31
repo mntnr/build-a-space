@@ -18,7 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "atob": "^2.0.3",
-    "axios": "^0.16.2",
+    "axios": "^0.17.0",
     "btoa": "^1.1.2",
     "deep-equal": "^1.0.1",
     "git-remote-origin-url": "^2.0.0",
@@ -29,7 +29,7 @@
     "querystring": "^0.2.0"
   },
   "devDependencies": {
-    "ava": "^0.22.0"
+    "ava": "^0.23.0"
   },
   "homepage": "https://github.com/RichardLitt/build-a-space",
   "bugs": "https://github.com/RichardLitt/build-a-space/issues",
