@@ -21,10 +21,24 @@ You'll need a [GitHub token](https://github.com/settings/tokens). Put it in the 
 ## Usage
 
 ```
-node cli.js mntnr/build-a-space
+Usage
+  $ build-a-space <input> [opts]
+
+Options
+  -f, --fork  Create and use a fork instead of pushing to a branch
+  -t, --test  Don't open issues or create pull requests
+  -c, --config  The path to a configuration file
+
+Examples
+  $ build-a-space mntnr/build-a-space
 ```
 
 Substitute another repo as needed. It drives itself from there.
+
+### Configuration
+
+You can specify a configuration file to stop having to type lots and lots of flags for multiple repositories. This will overwrite any flags you send in.
+
 
 ## Maintainers
 
