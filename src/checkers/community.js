@@ -4,15 +4,17 @@ const path = require('path')
 const {bunchFiles} = require('../../lib/githubHelpers.js')
 
 module.exports = async function wrap (github, opts) {
-  const files = await community(github)
+  const files = await community(github, opts)
   return bunchFiles(github, files, {
     test: opts.test,
     message: `docs: adding community docs`
   })
 }
 
-async function existsInBranch (github, file, toCheck) {
-  // Check if file exists already in the branch
+async function addToBranch (github, file, toCheck, opts) {
+  let email = opts.email || github.user.email || '[INSERT EMAIL ADDRESS]'
+
+    // Check if file exists already in the branch
   const {status} = await github.get(`/repos/${github.targetRepo}/contents/${file.filePath}?ref=${github.branchName}`)
   .catch(err => err)
   if (status !== 200) {
@@ -31,8 +33,8 @@ TODO This needs to be filled out!`)
         .toString('utf8')
 
       if (file.name === 'code_of_conduct') {
-        fileContent = fileContent.replace('[INSERT EMAIL ADDRESS]', github.user.email)
-        file.note.push(`Check the email in the Code of Conduct. We've added in ${github.user.email}.`)
+        fileContent = fileContent.replace('[INSERT EMAIL ADDRESS]', email)
+        file.note.push(`Check the email in the Code of Conduct. We've added in ${email}.`)
       }
 
       file.content = btoa(fileContent)
@@ -42,7 +44,7 @@ TODO This needs to be filled out!`)
   }
 }
 
-async function community (github) {
+async function community (github, opts) {
   // what is the community vitality like?
   const {data: community} = await github.get(`/repos/${github.repoName}/community/profile`)
     .catch(err => {
@@ -79,7 +81,7 @@ async function community (github) {
 
   await Promise.all(defaultChecks.map(async file => {
     if (community && !community.files[file.name]) {
-      existsInBranch(github, file, toCheck)
+      addToBranch(github, file, toCheck, opts)
     }
   }))
 

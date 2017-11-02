@@ -15,6 +15,7 @@ const cli = meow([`
     -f, --fork  Create and use a fork instead of pushing to a branch
     -t, --test  Don't open issues or create pull requests
     -c, --config  The path to a configuration file
+    --email     The email for the Code of Conduct
 
   Examples
     $ build-a-space mntnr/build-a-space
