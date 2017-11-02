@@ -1,6 +1,6 @@
 # Build A Space
 
-[![Build Status](https://travis-ci.org/RichardLitt/build-a-space.svg?branch=master)](https://travis-ci.org/RichardLitt/build-a-space) [![Greenkeeper badge](https://badges.greenkeeper.io/RichardLitt/build-a-space.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/mntnr/build-a-space.svg?branch=master)](https://travis-ci.org/mntnr/build-a-space) [![Greenkeeper badge](https://badges.greenkeeper.io/mntnr/build-a-space.svg)](https://greenkeeper.io/)
 
 > Automatically add community documentation to your repository
 
@@ -21,7 +21,7 @@ You'll need a [GitHub token](https://github.com/settings/tokens). Put it in the 
 ## Usage
 
 ```
-node cli.js RichardLitt/build-a-space
+node cli.js mntnr/build-a-space
 ```
 
 Substitute another repo as needed. It drives itself from there.
@@ -30,7 +30,7 @@ Substitute another repo as needed. It drives itself from there.
 
 [Me](https://burntfen.com).
 
-And [you](https://github.com/RichardLitt/build-a-space/issues/new?title=I%20want%20to%20be%20a%20maintainer!)?
+And [you](https://github.com/mntnr/build-a-space/issues/new?title=I%20want%20to%20be%20a%20maintainer!)?
 
 ## Contribute
 

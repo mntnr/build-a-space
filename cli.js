@@ -14,7 +14,7 @@ const cli = meow([`
     -t, --test  Don't open issues or create pull requests
 
   Examples
-    $ build-a-space RichardLitt/build-a-space
+    $ build-a-space mntnr/build-a-space
 `], {
   boolean: ['fork', 'test'],
   alias: {

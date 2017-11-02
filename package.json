@@ -30,11 +30,11 @@
   "devDependencies": {
     "ava": "^0.23.0"
   },
-  "homepage": "https://github.com/RichardLitt/build-a-space",
-  "bugs": "https://github.com/RichardLitt/build-a-space/issues",
+  "homepage": "https://github.com/mntnr/build-a-space",
+  "bugs": "https://github.com/mntnr/build-a-space/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RichardLitt/build-a-space.git"
+    "url": "https://github.com/mntnr/build-a-space.git"
   },
   "contributors": [
     "Richard Littauer <richard.littauer@gmail.com> (https://burntfen.com)"
