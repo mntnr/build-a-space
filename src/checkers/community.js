@@ -39,6 +39,8 @@ TODO This needs to be filled out!`)
       } else if (file.name === 'license') {
         fileContent = fileContent.replace('[INSERT LICENSEE]', licensee)
         file.note.push(`Check the licensee in the License. We've licensed this to "${licensee}".`)
+      } else if (file.name === 'contributing') {
+        fileContent = fileContent.replace('[GITHUB REPONAME]', github.repoName)
       }
 
       file.content = btoa(fileContent)

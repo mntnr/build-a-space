@@ -1,7 +1,7 @@
 # Contribute
 
 Please contribute! Here are some things that would be great:
-- Open an issue!
+- [Open an issue!](https://github.com/[GITHUB REPONAME]/issues/new)
 - Open a pull request!
 - Say hi! :wave:
 
