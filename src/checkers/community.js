@@ -13,6 +13,7 @@ module.exports = async function wrap (github, opts) {
 
 async function addToBranch (github, file, toCheck, opts) {
   let email = opts.email || github.user.email || '[INSERT EMAIL ADDRESS]'
+  let licensee = opts.licensee || '[INSERT LICENSEE]'
 
     // Check if file exists already in the branch
   const {status} = await github.get(`/repos/${github.targetRepo}/contents/${file.filePath}?ref=${github.branchName}`)
@@ -34,7 +35,10 @@ TODO This needs to be filled out!`)
 
       if (file.name === 'code_of_conduct') {
         fileContent = fileContent.replace('[INSERT EMAIL ADDRESS]', email)
-        file.note.push(`Check the email in the Code of Conduct. We've added in ${email}.`)
+        file.note.push(`Check the email in the Code of Conduct. We've added in "${email}".`)
+      } else if (file.name === 'license') {
+        fileContent = fileContent.replace('[INSERT LICENSEE]', licensee)
+        file.note.push(`Check the licensee in the License. We've licensed this to "${licensee}".`)
       }
 
       file.content = btoa(fileContent)

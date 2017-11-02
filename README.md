@@ -29,6 +29,7 @@ Options
   -t, --test  Don't open issues or create pull requests
   -c, --config  The path to a configuration file
   --email     The email for the Code of Conduct
+  --licensee  The person to license the repository to
 
 Examples
   $ build-a-space mntnr/build-a-space
