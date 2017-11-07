@@ -58,7 +58,7 @@ module.exports = async function addJavascriptFiles (github) {
   // Only commit if there is already a travis file
   const travisStatus = await checkStatus(github, travisFile)
   if (travisStatus === 404) {
-    travisFile.note = [`Consider adding Travis. Tests are great!`]
+    travisFile.note = [`Consider adding Travis. Travis is useful not only for tests, but also for [greenkeeper](https://greenkeeper.io/) and [semantic-release](https://github.com/semantic-release/semantic-release).`]
     toCheck.push(travisFile)
   } else {
     // Get the content of the template
