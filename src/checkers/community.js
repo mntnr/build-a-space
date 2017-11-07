@@ -30,8 +30,11 @@ TODO This needs to be filled out!`)
 
       file.content = fileContent.toString('base64')
     } else {
-      fileContent = await fs.readFileSync(path.join(__dirname, `../../fixtures/${file.filePath}`))
-        .toString('utf8')
+      if (file.name === 'contributing' && opts.contributing) {
+        fileContent = await fs.readFileSync(path.join(__dirname, '../../', opts.contributing)).toString('utf8')
+      } else {
+        fileContent = await fs.readFileSync(path.join(__dirname, `../../fixtures/${file.filePath}`)).toString('utf8')
+      }
 
       if (file.name === 'code_of_conduct') {
         fileContent = fileContent.replace('[INSERT EMAIL ADDRESS]', email)
