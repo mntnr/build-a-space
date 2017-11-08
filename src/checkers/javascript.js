@@ -23,7 +23,7 @@ module.exports = async function addJavascriptFiles (github) {
   const npmStatus = await checkStatus(github, packageFile)
   if (npmStatus === 404) {
     console.robowarn('There is no package.json. Is this not checked into npm?')
-    packageFile.note = [`You have no package.json file checked in that I can find. Think about adding one.`]
+    packageFile.note = [`You have no package.json file checked in that I can find. I am assuming this isn't published on npm. Did I miss something?`]
     toCheck.push(packageFile)
   } else {
     const {data: npm} = await github.get(`/repos/${github.repoName}/contents/package.json?ref=${github.branchName}`)
