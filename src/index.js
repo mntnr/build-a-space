@@ -40,6 +40,8 @@ module.exports = async function index (repoName, opts) {
   console.robolog(`Authenticated as ${user.login}. Looking if I already created a pull request.`)
   github.user = user
 
+  github.defaultBranch = opts.branch || 'master'
+
   // Start a pull request
   const currentSha = await initPR(github, opts)
 
@@ -112,8 +114,8 @@ async function initPR (github, opts) {
     github.branchName = `docs/${new Date().toISOString().substr(0, 10)}`
   }
 
-  console.robolog(`Looking for last commit sha of ${github.repoName}/git/refs/heads/master`)
-  const {data: {object: {sha}}} = await github.get(`/repos/${github.repoName}/git/refs/heads/master`)
+  console.robolog(`Looking for last commit sha of ${github.repoName}/git/refs/heads/${github.defaultBranch}`)
+  const {data: {object: {sha}}} = await github.get(`/repos/${github.repoName}/git/refs/heads/${github.defaultBranch}`)
 
   return sha
 }
@@ -176,14 +178,14 @@ async function getOrCreateBranch (github, sha) {
 }
 
 async function createPullRequest (github, files, opts) {
-  if (github.branchName === 'master') {
+  if (github.branchName === github.defaultBranch) {
     console.robolog(`No changes (you've run this already), or there is some other issue.`)
     console.log()
     return
   }
 
   // Are there any commits?
-  const {data: {commit: {sha: oldBranch}}} = await github.get(`/repos/${github.repoName}/branches/master`)
+  const {data: {commit: {sha: oldBranch}}} = await github.get(`/repos/${github.repoName}/branches/${github.defaultBranch}`)
   const {data: {commit: {sha: newBranch}}} = await github.get(`/repos/${github.targetRepo}/branches/${github.branchName}`)
   if (oldBranch === newBranch) {
     console.robofire(`Unable to create PR because there is no content.`)
@@ -201,7 +203,7 @@ async function createPullRequest (github, files, opts) {
       // Where changes are implemented. Format: `username:branch`.
       head: `${github.targetRepo.split('/')[0]}:${github.branchName}`,
       // TODO Use default_branch across tool, not just `master` branch
-      base: 'master',
+      base: github.defaultBranch,
       body: messages.pr.body(files)
     }).catch(async err => {
       console.robofire(`Unable to create PR inexplicably.`, err)

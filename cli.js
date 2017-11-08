@@ -15,6 +15,7 @@ const cli = meow([`
     -f, --fork  Create and use a fork instead of pushing to a branch
     -t, --test  Don't open issues or create pull requests
     -c, --config  The path to a configuration file
+    -b, --branch  The default branch to use instead of 'master'
     --email     The email for the Code of Conduct
     --licensee  The person to license the repository to
 
@@ -24,6 +25,7 @@ const cli = meow([`
   boolean: ['fork', 'test'],
   string: ['config'],
   alias: {
+    'b': 'branch',
     'c': 'config',
     'f': 'fork',
     't': 'test'
