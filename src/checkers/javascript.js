@@ -26,7 +26,7 @@ module.exports = async function addJavascriptFiles (github) {
     packageFile.note = [`You have no package.json file checked in that I can find. I am assuming this isn't published on npm. Did I miss something?`]
     toCheck.push(packageFile)
   } else {
-    const {data: npm} = await github.get(`/repos/${github.repoName}/contents/package.json?ref=${github.branchName}`)
+    const {data: npm} = await github.get(`/repos/${github.repoName}/contents/package.json?branch=${github.branchName}`)
     const pkg = JSON.parse(Buffer.from(npm.content, 'base64'))
     // Do the heavylifting in the lintPackage file
     const {pkg: newPkg, notesForUser} = await lintPackageJson.lint(github, pkg)

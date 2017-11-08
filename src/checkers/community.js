@@ -16,7 +16,7 @@ async function addToBranch (github, file, toCheck, opts) {
   let licensee = opts.licensee || '[INSERT LICENSEE]'
 
     // Check if file exists already in the branch
-  const {status} = await github.get(`/repos/${github.targetRepo}/contents/${file.filePath}?ref=${github.branchName}`)
+  const {status} = await github.get(`/repos/${github.targetRepo}/contents/${file.filePath}?branch=${github.branchName}`)
   .catch(err => err)
   if (status !== 200) {
     let fileContent
