@@ -36,6 +36,7 @@ TODO This needs to be filled out!`)
         fileContent = await fs.readFileSync(path.join(__dirname, `../../fixtures/${file.filePath}`)).toString('utf8')
       }
 
+      // Text Replacements
       if (file.name === 'code_of_conduct') {
         fileContent = fileContent.replace('[INSERT EMAIL ADDRESS]', email)
         file.note.push(`Check the email in the Code of Conduct. We've added in "${email}".`)
