@@ -1,6 +1,11 @@
 const btoa = require('btoa')
 const fs = require('mz/fs')
 const path = require('path')
+const vfile = require('vfile')
+const unified = require('unified')
+const parse = require('remark-parse')
+const position = require('unist-util-position')
+const range = require('mdast-util-heading-range')
 const {bunchFiles} = require('../../lib/githubHelpers.js')
 
 module.exports = async function wrap (github, opts) {
@@ -33,7 +38,22 @@ TODO This needs to be filled out!`)
       if (file.name === 'contributing' && opts.contributing) {
         fileContent = await fs.readFileSync(path.join(__dirname, '../../', opts.contributing)).toString('utf8')
       } else {
-        fileContent = await fs.readFileSync(path.join(__dirname, `../../fixtures/${file.filePath}`)).toString('utf8')
+        // Get the readme.
+        // TODO: should this be branch specific?
+        const {data: readme} = await github.get(`/repos/${github.repoName}/readme`)
+        const vf = vfile(Buffer.from(readme.content, 'base64').toString('utf8'))
+        let contributing
+
+        // Use the section from the readme, if there is one.
+        const processor = unified().use(parse).use(find('contribute', {includeHeading: true}, function (section) {
+          contributing = section
+        }))
+
+        // Parse and process the readme
+        processor.runSync(processor.parse(vf), vf)
+
+        // Use the found section, or the default fixture
+        fileContent = contributing || await fs.readFileSync(path.join(__dirname, `../../fixtures/${file.filePath}`)).toString('utf8')
       }
 
       // Text Replacements
@@ -96,4 +116,39 @@ async function community (github, opts) {
   }))
 
   return toCheck
+}
+
+function find (heading, opts, callback) {
+  if (callback === undefined) {
+    callback = opts
+    opts = undefined
+  }
+
+  return attacher
+
+  function attacher () {
+    return transformer
+  }
+
+  function transformer (tree, file) {
+    var found = false
+
+    range(tree, heading, onfind)
+
+    if (!found) {
+      callback()
+    }
+
+    function onfind (start, nodes) {
+      var heading = (opts || {}).includeHeading === true
+      var begin = heading ? start : nodes[0]
+      var initial = position.start(begin).offset
+      var final = position.end(nodes[nodes.length - 1]).offset
+
+      if (initial !== undefined && final !== undefined) {
+        found = true
+        callback(file.contents.slice(initial, final))
+      }
+    }
+  }
 }
