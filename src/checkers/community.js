@@ -2,7 +2,7 @@ const btoa = require('btoa')
 const fs = require('mz/fs')
 const path = require('path')
 const {bunchFiles} = require('../../lib/githubHelpers.js')
-const getSection = require('../util/get-section')
+const getSection = require('../utilities/get-section')
 
 module.exports = async function wrap (github, opts) {
   const files = await community(github, opts)
