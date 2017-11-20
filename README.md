@@ -41,6 +41,21 @@ Substitute another repo as needed. It drives itself from there.
 
 You can specify a configuration file to stop having to type lots and lots of flags for multiple repositories. This will overwrite any flags you send in.
 
+```
+$ build-a-space -c=config.json
+```
+
+And, in `config.json`:
+
+```
+{
+  "email": "richard@maintainer.io",
+  "licensee": "Richard Littauer",
+  "contributing": "./contributing.md"
+}
+```
+
+The contributing file path needs to be in the `build-a-space` directory.
 
 ## Maintainers
 
