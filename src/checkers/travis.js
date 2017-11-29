@@ -3,8 +3,8 @@ const path = require('path')
 const {checkStatus, sameOnBranch, commitFile} = require('../../lib/githubHelpers.js')
 
 module.exports = async function checkTravis (github, opts) {
-  if (opts.noTravis) {
-    console.robolog('Ignoreing Travis file')
+  if (!opts.travis) {
+    console.robolog('Ignoring Travis file')
     return []
   }
 

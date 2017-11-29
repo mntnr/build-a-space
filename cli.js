@@ -23,13 +23,16 @@ const cli = meow([`
   Examples
     $ build-a-space mntnr/build-a-space
 `], {
-  boolean: ['fork', 'test'],
+  boolean: ['fork', 'test', 'travis'],
   string: ['config'],
   alias: {
     'b': 'branch',
     'c': 'config',
     'f': 'fork',
     't': 'test'
+  },
+  default: {
+    'travis': true
   }
 })
 
