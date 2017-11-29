@@ -36,7 +36,7 @@ module.exports = async function addJavascriptFiles (github) {
         content: packageFile.content,
         message: `chore: updated fields in the package.json
 
-        ${packageFile.note.map(note => `- [ ] ${note}`).join('\n')}
+        ${packageFile.note.map(note => `- ${note}`).join('\n')}
         `,
         path: packageFile.path,
         name: packageFile.name
