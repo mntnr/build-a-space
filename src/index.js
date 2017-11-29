@@ -4,6 +4,7 @@ const console = require('../lib/robo')
 const querystring = require('querystring')
 const checkCommunity = require('./checkers/community')
 const checkJavascript = require('./checkers/javascript')
+const checkTravis = require('./checkers/travis')
 const messages = require('./messages')
 const github = axios.create({
   baseURL: env.BASE_URL,
@@ -58,10 +59,11 @@ module.exports = async function index (repoName, opts) {
   // Check the community files
   const communityFiles = await checkCommunity(github, opts)
   // Check the JavaScript files
-  const jsFiles = await checkJavascript(github)
+  const jsFiles = await checkJavascript(github, opts)
+  const travisFile = await checkTravis(github, opts)
 
   // Create a pullrequest, and combine notes for the enduser
-  await createPullRequest(github, communityFiles.concat(jsFiles), opts)
+  await createPullRequest(github, communityFiles.concat(jsFiles, travisFile), opts)
 }
 
 async function initPR (github, opts) {
