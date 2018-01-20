@@ -27,7 +27,7 @@
     "meow": "^3.7.0",
     "mz": "^2.7.0",
     "querystring": "^0.2.0",
-    "remark-parse": "^4.0.0",
+    "remark-parse": "^5.0.0",
     "unified": "^6.1.5",
     "unist-util-position": "^3.0.0",
     "vfile": "^2.2.0"
