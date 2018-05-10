@@ -28,7 +28,7 @@
     "mz": "^2.7.0",
     "querystring": "^0.2.0",
     "remark-parse": "^4.0.0",
-    "unified": "^6.1.5",
+    "unified": "^7.0.0",
     "unist-util-position": "^3.0.0",
     "vfile": "^2.2.0"
   },
