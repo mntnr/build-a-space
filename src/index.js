@@ -18,6 +18,7 @@ const github = axios.create({
     }
   }
 })
+const opn = require('opn')
 
 module.exports = async function index (repoName, opts) {
   // https://docs.travis-ci.com/user/environment-variables/
@@ -212,6 +213,9 @@ async function createPullRequest (github, files, opts) {
     })
     if (res) {
       console.robolog(`Pull request created: ${res.data.html_url}`)
+      if (opts.open) {
+        await opn(res.data.html_url, {wait: false})
+      }
     }
   }
 }

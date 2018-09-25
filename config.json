@@ -1,0 +1,7 @@
+{
+  "email": "open-source@shutterstock.com",
+  "licensee": "Shutterstock Inc.",
+  "contributing": "./shutterstock-contributing.md",
+  "travis": false,
+  "open": true
+}
