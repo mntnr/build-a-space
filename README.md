@@ -6,7 +6,7 @@
 
 ## Background
 
-I often clean up repositories, and have ideas for what I want to add to them. However, just as often, I manually add files to repositories. @gr2m got me thinking - wouldn't it be better if I could automatically add files to a repository, using a GitHub bot?
+I often clean up repositories, and have ideas for what I want to add to them. However, just as often, I manually add files to repositories. [@gr2m](https://github.com/gr2m) got me thinking - wouldn't it be better if I could automatically add files to a repository, using a GitHub bot?
 
 This GitHub bot does _just that_. It adds a Contributing guide, a Code of Conduct, a README if you don't have one stubbed out, a License, and more to a repository. It lints your `package.json`. It tells you if you don't have an email specified in your CoC. It does a lot of stuff.
 
@@ -14,9 +14,15 @@ The point is to make building a space for community to grow _easier_. This stuff
 
 ## Install
 
-This hasn't been set up for more than cloning, yet. Clone.
+You can install this globally with npm:
+
+```
+$ npm install -g build-a-space
+```
 
 You'll need a [GitHub token](https://github.com/settings/tokens). Put it in the `env.js` file, or in a `$BUILD_A_SPACE` token in your environment.
+
+You _may_ be able to install this locally and include it, but I have no idea how it would react.
 
 ## Usage
 
@@ -28,8 +34,11 @@ Options
   -f, --fork  Create and use a fork instead of pushing to a branch
   -t, --test  Don't open issues or create pull requests
   -c, --config  The path to a configuration file
+  -b, --branch  The default branch to use instead of 'master'
   --email     The email for the Code of Conduct
   --licensee  The person to license the repository to
+  --travis    Don't edit the Travis file
+  --open      Open the PR url afterwards
 
 Examples
   $ build-a-space mntnr/build-a-space
