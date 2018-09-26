@@ -1,6 +1,6 @@
 const fs = require('mz/fs')
 const path = require('path')
-const {checkStatus, sameOnBranch, commitFile} = require('../../lib/githubHelpers.js')
+const { checkStatus, sameOnBranch, commitFile } = require('../../lib/githubHelpers.js')
 
 module.exports = async function checkTravis (github, opts) {
   if (!opts.travis) {

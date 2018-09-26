@@ -19,7 +19,7 @@ const cli = meow({
     -b, --branch  The default branch to use instead of 'master'
     --email     The email for the Code of Conduct
     --licensee  The person to license the repository to
-    --travis    Don't edit the Travis file
+    --travis    Edit the travis file
     --open      Open the PR url afterwards
 
   Examples
@@ -54,7 +54,7 @@ const cli = meow({
     },
     'travis': {
       type: 'boolean',
-      default: true
+      default: false
     },
     'open': {
       type: 'boolean',

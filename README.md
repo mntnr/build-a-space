@@ -37,7 +37,7 @@ Options
   -b, --branch  The default branch to use instead of 'master'
   --email     The email for the Code of Conduct
   --licensee  The person to license the repository to
-  --travis    Don't edit the Travis file
+  --travis    Edit the Travis file
   --open      Open the PR url afterwards
 
 Examples
