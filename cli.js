@@ -26,6 +26,10 @@ const cli = meow({
     $ build-a-space mntnr/build-a-space
 `,
   'flags': {
+    'help': {
+      type: 'boolean',
+      alias: 'h'
+    },
     'fork': {
       type: 'boolean',
       alias: 'f'
@@ -55,6 +59,10 @@ const cli = meow({
     'open': {
       type: 'boolean',
       defaul: false
+    },
+    'version': {
+      type: 'boolean',
+      alias: 'v'
     }
   }
 })
