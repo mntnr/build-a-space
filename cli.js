@@ -7,7 +7,8 @@ const fn = require('./src/index')
 const gitRemoteOriginUrl = require('git-remote-origin-url')
 const gitRemoteUpstreamUrl = require('git-remote-upstream-url')
 
-const cli = meow([`
+const cli = meow({
+  'help': `
   Usage
     $ build-a-space <input> [opts]
 
@@ -23,18 +24,38 @@ const cli = meow([`
 
   Examples
     $ build-a-space mntnr/build-a-space
-`], {
-  boolean: ['fork', 'test', 'travis', 'open'],
-  string: ['config'],
-  alias: {
-    'b': 'branch',
-    'c': 'config',
-    'f': 'fork',
-    't': 'test'
-  },
-  default: {
-    'travis': true,
-    'open': false
+`,
+  'flags': {
+    'fork': {
+      type: 'boolean',
+      alias: 'f'
+    },
+    'test': {
+      type: 'boolean',
+      alias: 't'
+    },
+    'config': {
+      type: 'string',
+      alias: 'c'
+    },
+    'branch': {
+      type: 'string',
+      alias: 'b'
+    },
+    'email': {
+      type: 'string'
+    },
+    'licensee': {
+      type: 'string'
+    },
+    'travis': {
+      type: 'boolean',
+      default: true
+    },
+    'open': {
+      type: 'boolean',
+      defaul: false
+    }
   }
 })
 
