@@ -16,7 +16,7 @@
   "author": "Richard Littauer <richard.littauer@gmail.com> (https://burntfen.com)",
   "license": "MIT",
   "dependencies": {
-    "atob": "^2.0.3",
+    "atob": "^2.1.2",
     "axios": "^0.17.0",
     "btoa": "^1.1.2",
     "deep-equal": "^1.0.1",
