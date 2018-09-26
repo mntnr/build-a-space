@@ -19,11 +19,12 @@ const cli = meow([`
     --email     The email for the Code of Conduct
     --licensee  The person to license the repository to
     --travis    Don't edit the Travis file
+    --open      Open the PR url afterwards
 
   Examples
     $ build-a-space mntnr/build-a-space
 `], {
-  boolean: ['fork', 'test', 'travis'],
+  boolean: ['fork', 'test', 'travis', 'open'],
   string: ['config'],
   alias: {
     'b': 'branch',
@@ -32,7 +33,8 @@ const cli = meow([`
     't': 'test'
   },
   default: {
-    'travis': true
+    'travis': true,
+    'open': false
   }
 })
 

@@ -26,6 +26,7 @@
     "mdast-util-heading-range": "^2.1.0",
     "meow": "^3.7.0",
     "mz": "^2.7.0",
+    "opn": "^5.1.0",
     "querystring": "^0.2.0",
     "remark-parse": "^4.0.0",
     "unified": "^6.1.5",

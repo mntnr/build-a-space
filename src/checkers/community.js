@@ -95,7 +95,7 @@ async function community (github, opts) {
 
   await Promise.all(defaultChecks.map(async file => {
     if (community && !community.files[file.name]) {
-      addToBranch(github, file, toCheck, opts)
+      await addToBranch(github, file, toCheck, opts)
     }
   }))
 
