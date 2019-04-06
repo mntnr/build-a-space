@@ -21,7 +21,7 @@
     "axios": "^0.17.0",
     "btoa": "^1.1.2",
     "deep-equal": "^1.0.1",
-    "git-remote-origin-url": "^2.0.0",
+    "git-remote-origin-url": "^3.0.0",
     "git-remote-upstream-url": "^2.0.0",
     "json-diff": "^0.5.2",
     "mdast-util-heading-range": "^2.1.0",
