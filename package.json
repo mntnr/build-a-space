@@ -31,7 +31,7 @@
     "querystring": "^0.2.0",
     "remark-parse": "^4.0.0",
     "standard": "^12.0.1",
-    "unified": "^6.1.5",
+    "unified": "^8.2.0",
     "unist-util-position": "^3.0.0",
     "vfile": "^2.2.0"
   },
