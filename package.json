@@ -18,7 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "atob": "^2.1.2",
-    "axios": "^0.17.0",
+    "axios": "^0.19.1",
     "btoa": "^1.1.2",
     "deep-equal": "^1.0.1",
     "git-remote-origin-url": "^2.0.0",
