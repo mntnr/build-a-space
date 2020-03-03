@@ -33,7 +33,7 @@
     "standard": "^13.0.1",
     "unified": "^6.1.5",
     "unist-util-position": "^3.0.0",
-    "vfile": "^2.2.0"
+    "vfile": "^4.0.3"
   },
   "devDependencies": {
     "ava": "^0.24.0"
