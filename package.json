@@ -29,7 +29,7 @@
     "mz": "^2.7.0",
     "opn": "^5.1.0",
     "querystring": "^0.2.0",
-    "remark-parse": "^4.0.0",
+    "remark-parse": "^8.0.0",
     "standard": "^13.0.1",
     "unified": "^6.1.5",
     "unist-util-position": "^3.0.0",
