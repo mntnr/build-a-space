@@ -30,7 +30,7 @@
     "opn": "^5.1.0",
     "querystring": "^0.2.0",
     "remark-parse": "^4.0.0",
-    "standard": "^13.0.1",
+    "standard": "^14.3.4",
     "unified": "^6.1.5",
     "unist-util-position": "^3.0.0",
     "vfile": "^2.2.0"
