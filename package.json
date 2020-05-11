@@ -25,7 +25,7 @@
     "git-remote-upstream-url": "^2.0.0",
     "json-diff": "^0.5.2",
     "mdast-util-heading-range": "^2.1.0",
-    "meow": "^4.0.0",
+    "meow": "^7.0.1",
     "mz": "^2.7.0",
     "opn": "^5.1.0",
     "querystring": "^0.2.0",
